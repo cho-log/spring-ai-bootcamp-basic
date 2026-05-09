@@ -40,3 +40,5 @@ __pycache__/
 
 # Matrix metadata
 **/.omc/
+
+src/main/resources/application-*.yml
