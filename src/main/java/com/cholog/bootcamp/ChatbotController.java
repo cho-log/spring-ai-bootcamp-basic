@@ -15,15 +15,15 @@ public class ChatbotController {
     private final ChatClient chatClient;
 
     public ChatbotController(ChatClient.Builder builder) {
-        this.chatClient = builder.build();
+        String prompt = "다음은 답변에 참고할 내용입니다: {data} \\n\\n 질문: {question}\n";
+        this.chatClient = builder.defaultUser(prompt).build();
     }
 
     @PostMapping
     public String chat(@RequestBody String question) {
-        String promptTemplate = "다음은 답변에 참고할 내용입니다: {data} \\n\\n 질문: {question}\n";
         Map<String, Object> promptParams = Map.of("data", "주문 금액과 상관없이 Priority 배송 무료다.", "question", question);
         return chatClient.prompt()
-            .user(userSpec -> userSpec.text(promptTemplate).params(promptParams))
+            .user(userSpec -> userSpec.params(promptParams))
             .call()
             .content();
     }
