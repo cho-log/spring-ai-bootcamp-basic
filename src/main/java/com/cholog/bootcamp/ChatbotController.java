@@ -1,8 +1,10 @@
 package com.cholog.bootcamp;
 
-import java.util.Map;
-
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.SimpleVectorStore;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,16 +16,17 @@ public class ChatbotController {
 
     private final ChatClient chatClient;
 
-    public ChatbotController(ChatClient.Builder builder) {
-        String prompt = "다음은 답변에 참고할 내용입니다: {data} \\n\\n 질문: {question}\n";
-        this.chatClient = builder.defaultUser(prompt).build();
+    public ChatbotController(ChatClient.Builder builder, EmbeddingModel embeddingModel) {
+        VectorStore vectorStore = SimpleVectorStore.builder(embeddingModel).build();
+        this.chatClient = builder.defaultAdvisors(
+            QuestionAnswerAdvisor.builder(vectorStore).build()
+        ).build();
     }
 
     @PostMapping
     public String chat(@RequestBody String question) {
-        Map<String, Object> promptParams = Map.of("data", "주문 금액과 상관없이 Priority 배송 무료다.", "question", question);
         return chatClient.prompt()
-            .user(userSpec -> userSpec.params(promptParams))
+            .user(question)
             .call()
             .content();
     }
