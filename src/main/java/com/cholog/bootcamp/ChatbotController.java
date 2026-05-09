@@ -1,5 +1,7 @@
 package com.cholog.bootcamp;
 
+import java.util.Map;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,9 +19,11 @@ public class ChatbotController {
     }
 
     @PostMapping
-    public String chat(@RequestBody String userInput) {
+    public String chat(@RequestBody String question) {
+        String promptTemplate = "다음은 답변에 참고할 내용입니다: {data} \\n\\n 질문: {question}\n";
+        Map<String, Object> promptParams = Map.of("data", "주문 금액과 상관없이 Priority 배송 무료다.", "question", question);
         return chatClient.prompt()
-            .user(userInput)
+            .user(userSpec -> userSpec.text(promptTemplate).params(promptParams))
             .call()
             .content();
     }
