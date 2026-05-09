@@ -1,6 +1,6 @@
 package com.cholog.bootcamp;
 
-public record ChatResponse(
+public record QuestionAskResponse(
     String answer,
     InnerTokenUsageResponse tokenUsage
 ) {
