@@ -16,8 +16,9 @@ public class ChatbotController {
 
     private final ChatClient chatClient;
 
-    public ChatbotController(ChatClient.Builder builder, EmbeddingModel embeddingModel) {
+    public ChatbotController(ChatClient.Builder builder, EmbeddingModel embeddingModel, MarkdownReader markdownReader) {
         VectorStore vectorStore = SimpleVectorStore.builder(embeddingModel).build();
+        vectorStore.add(markdownReader.loadAll());
         this.chatClient = builder.defaultAdvisors(
             QuestionAnswerAdvisor.builder(vectorStore).build()
         ).build();
