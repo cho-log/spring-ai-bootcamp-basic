@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,9 @@ public class ChatbotController {
         VectorStore vectorStore = SimpleVectorStore.builder(embeddingModel).build();
         vectorStore.add(markdownReader.loadAll());
         this.chatClient = builder.defaultAdvisors(
-            QuestionAnswerAdvisor.builder(vectorStore).build()
+            QuestionAnswerAdvisor.builder(vectorStore)
+                .searchRequest(SearchRequest.builder().topK(8).build())  // default topK : 4
+                .build()
         ).build();
     }
 
