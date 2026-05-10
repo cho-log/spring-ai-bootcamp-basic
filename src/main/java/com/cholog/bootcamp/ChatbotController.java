@@ -1,5 +1,7 @@
 package com.cholog.bootcamp;
 
+import java.util.Map;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -25,10 +27,11 @@ public class ChatbotController {
     }
 
     @PostMapping
-    public String chat(@RequestBody String question) {
-        return chatClient.prompt()
+    public Map<String, String> chat(@RequestBody String question) {
+        String answer = chatClient.prompt()
             .user(question)
             .call()
             .content();
+        return Map.of("answer", answer);
     }
 }
