@@ -27,9 +27,9 @@ public class ChatbotController {
     }
 
     @PostMapping
-    public Map<String, String> chat(@RequestBody String question) {
+    public Map<String, String> chat(@RequestBody ChatRequest request) {
         String answer = chatClient.prompt()
-            .user(question)
+            .user(request.question())
             .call()
             .content();
         return Map.of("answer", answer);
