@@ -1,7 +1,9 @@
 package com.cholog.bootcamp.data;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.ai.chat.metadata.Usage;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record TokenUsage(
         int promptTokens,
         int completionTokens,
