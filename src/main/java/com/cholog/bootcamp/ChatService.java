@@ -22,6 +22,9 @@ public class ChatService {
 
     public QuestionAskResponse askQuestion(QuestionAskRequest request) {
         String faq = getFAQ();
+        String currentPolicy = getCurrentPolicy();
+        String deprecatedPolicy = getDeprecatedPolicy();
+        String internalPolicy = getInternalPolicy();
 
         ChatResponse chatResponse = chatClient.prompt()
             .system("""
@@ -29,8 +32,18 @@ public class ChatService {
                 제공된 문서를 참고하여 고객에게 답변을 해주세요.
                 모든 응답은 한국어로 해야하며, 초록 코퍼레이션과 무관한 내용은 다루지 마세요.
                 
+                FAQ는 다음과 같습니다.
                 %s
-                """.formatted(faq))
+                
+                현재 정책은 다음과 같습니다.
+                %s
+                
+                폐지된 정책은 다음과 같습니다.
+                %s
+                
+                회사 내부 정책은 다음과 같습니다.
+                %s
+                """.formatted(faq, currentPolicy, deprecatedPolicy, internalPolicy))
             .user(request.question())
             .call()
             .chatResponse();
@@ -48,6 +61,31 @@ public class ChatService {
         StringBuilder sb = new StringBuilder();
 
         File file = new File("data/layer1_faq");
+        return readFileToString(file, sb);
+    }
+
+    private String getCurrentPolicy() {
+        StringBuilder sb = new StringBuilder();
+
+        File file = new File("data/layer2_policies/current");
+        return readFileToString(file, sb);
+    }
+
+    private String getDeprecatedPolicy() {
+        StringBuilder sb = new StringBuilder();
+
+        File file = new File("data/layer2_policies/deprecated");
+        return readFileToString(file, sb);
+    }
+
+    private String getInternalPolicy() {
+        StringBuilder sb = new StringBuilder();
+
+        File file = new File("data/layer2_policies/internal");
+        return readFileToString(file, sb);
+    }
+
+    private String readFileToString(File file, StringBuilder sb) {
         File[] files = file.listFiles();
 
         for (File fs : files) {
