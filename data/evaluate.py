@@ -70,7 +70,7 @@ def ask_server(question: str) -> dict | None:
 # ─── LLM 판정 ─────────────────────────────────────────────────────────────────
 
 def judge_answer(question: str, expected: str, actual: str) -> dict:
-    """LLM으로 답변의 사실적 일치도를 판정합니다."""
+    """LLM으로 답변의 사실적 일치도를 판정합니다. usage 포함하여 반환."""
     prompt = f"""당신은 FAQ 챗봇 답변의 품질을 평가하는 판정자입니다.
 
 질문: {question}
@@ -96,10 +96,18 @@ JSON으로만 응답하세요:
         response_format={"type": "json_object"},
     )
 
+    usage = resp.usage
     try:
-        return json.loads(resp.choices[0].message.content)
+        result = json.loads(resp.choices[0].message.content)
     except json.JSONDecodeError:
-        return {"score": 0, "reason": "판정 파싱 실패"}
+        result = {"score": 0, "reason": "판정 파싱 실패"}
+
+    result["judge_usage"] = {
+        "prompt_tokens": usage.prompt_tokens,
+        "completion_tokens": usage.completion_tokens,
+        "total_tokens": usage.total_tokens,
+    }
+    return result
 
 
 # ─── 메인 ─────────────────────────────────────────────────────────────────────
@@ -133,6 +141,7 @@ def main():
 
     results = {"correct": 0, "incorrect": 0, "error": 0}
     tier_results = {}
+    chatbot_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
     start_time = time.time()
 
     for i, q in enumerate(questions):
@@ -154,6 +163,10 @@ def main():
             continue
 
         actual_answer = response.get("answer", "")
+        token_usage = response.get("tokenUsage", {})
+        chatbot_usage["prompt_tokens"] += token_usage.get("promptTokens", 0)
+        chatbot_usage["completion_tokens"] += token_usage.get("completionTokens", 0)
+        chatbot_usage["total_tokens"] += token_usage.get("totalTokens", 0)
 
         # LLM 판정
         judgment = judge_answer(question_ko, expected, actual_answer)
@@ -197,6 +210,12 @@ def main():
     print(f"\n소요 시간: {elapsed:.1f}초")
     print(f"평균 응답: {elapsed/max(total,1):.1f}초/질문")
 
+    evaluated = total - results["error"]
+    print(f"\n=== 챗봇 토큰 사용량 ===")
+    print(f"  prompt    : 합계 {chatbot_usage['prompt_tokens']:,} / 평균 {chatbot_usage['prompt_tokens']//max(evaluated,1):,}")
+    print(f"  completion: 합계 {chatbot_usage['completion_tokens']:,} / 평균 {chatbot_usage['completion_tokens']//max(evaluated,1):,}")
+    print(f"  total     : 합계 {chatbot_usage['total_tokens']:,} / 평균 {chatbot_usage['total_tokens']//max(evaluated,1):,}")
+
     # 결과 저장
     result_file = DATA_DIR / "eval_result.json"
     with open(result_file, "w") as f:
@@ -208,6 +227,7 @@ def main():
             "accuracy": results["correct"] / max(total, 1),
             "tier_results": tier_results,
             "elapsed_seconds": elapsed,
+            "chatbot_token_usage": chatbot_usage,
         }, f, indent=2, ensure_ascii=False)
     print(f"\n결과 저장: {result_file}")
 
