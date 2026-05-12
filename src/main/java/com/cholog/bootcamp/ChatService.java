@@ -52,7 +52,14 @@ public class ChatService {
         log.info("""
             request : {}
             response : {}
-            """, request.question(), chatResponse.getResults().get(0).getOutput().getText());
+            promptTokens : {} completionTokens : {}, totalTokens : {}
+            """,
+            request.question(),
+            chatResponse.getResults().get(0).getOutput().getText(),
+            usage.getPromptTokens(),
+            usage.getCompletionTokens(),
+            usage.getTotalTokens()
+        );
 
         return QuestionAskResponse.from(
             chatResponse.getResults().get(0).getOutput().getText(),
