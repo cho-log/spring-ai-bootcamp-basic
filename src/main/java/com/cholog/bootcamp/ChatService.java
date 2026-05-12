@@ -41,12 +41,9 @@ public class ChatService {
                 현재 정책은 다음과 같습니다.
                 %s
                 
-                폐지된 정책은 다음과 같습니다.
-                %s
-                
                 회사 내부 정책은 다음과 같습니다.
                 %s
-                """.formatted(faq, currentPolicy, deprecatedPolicy, internalPolicy))
+                """.formatted(faq, currentPolicy, internalPolicy))
             .user(request.question())
             .call()
             .chatResponse();
