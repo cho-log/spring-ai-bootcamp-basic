@@ -11,6 +11,9 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class ChatService {
 
@@ -48,6 +51,11 @@ public class ChatService {
             .call()
             .chatResponse();
         Usage usage = chatResponse.getMetadata().getUsage();
+
+        log.info("""
+            request : {}
+            response : {}
+            """, request.question(), chatResponse.getResults().get(0).getOutput().getText());
 
         return QuestionAskResponse.from(
             chatResponse.getResults().get(0).getOutput().getText(),
