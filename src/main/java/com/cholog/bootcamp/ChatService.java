@@ -62,7 +62,7 @@ public class ChatService {
         );
 
         return QuestionAskResponse.from(
-            chatResponse.getResults().get(0).getOutput().getText(),
+            chatResponse.getResult().getOutput().getText(),
             usage.getPromptTokens(),
             usage.getCompletionTokens(),
             usage.getTotalTokens()
