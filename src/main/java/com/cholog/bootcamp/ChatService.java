@@ -101,7 +101,7 @@ public class ChatService {
         File[] files = file.listFiles();
 
         for (File fs : files) {
-            sb.append(file.getName()).append('\n');
+            sb.append(fs.getName()).append('\n');
             try (BufferedReader br = new BufferedReader(new FileReader(fs))) {
                 String line;
                 while ((line = br.readLine()) != null) {
