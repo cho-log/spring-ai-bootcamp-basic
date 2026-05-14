@@ -3,7 +3,6 @@ package com.cholog.bootcamp.chatbot.infrastructure;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.TextReader;
-import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
@@ -21,23 +20,20 @@ public class DocumentLoader {
     private static final String LAYER_FAQ = "faq";
     private static final String LAYER_POLICY = "policy";
 
-    private static final int CHUNK_SIZE = 300;
-    private static final int OVERLAP_SIZE = 50;
-
     private final PathMatchingResourcePatternResolver resolver =
             new PathMatchingResourcePatternResolver();
-    private final TokenTextSplitter splitter =
-            new TokenTextSplitter(CHUNK_SIZE, OVERLAP_SIZE, 5, 10000, true);
+    private final MarkdownHeadingSplitter faqSplitter = new MarkdownHeadingSplitter("###");
+    private final MarkdownHeadingSplitter policySplitter = new MarkdownHeadingSplitter("##");
 
     public List<Document> loadFaq() {
-        return load(FAQ_PATTERN, LAYER_FAQ);
+        return load(FAQ_PATTERN, LAYER_FAQ, faqSplitter);
     }
 
     public List<Document> loadPolicies() {
-        return load(POLICY_PATTERN, LAYER_POLICY);
+        return load(POLICY_PATTERN, LAYER_POLICY, policySplitter);
     }
 
-    private List<Document> load(String pattern, String layer) {
+    private List<Document> load(String pattern, String layer, MarkdownHeadingSplitter splitter) {
         try {
             Resource[] resources = resolver.getResources(pattern);
 
@@ -48,7 +44,7 @@ public class DocumentLoader {
 
             List<Document> result = new ArrayList<>();
             for (Resource resource : resources) {
-                result.addAll(toDocuments(resource, layer));
+                result.addAll(toDocuments(resource, layer, splitter));
             }
 
             log.info("문서 로드 완료: layer={}, 총 {}개 청크", layer, result.size());
@@ -59,9 +55,11 @@ public class DocumentLoader {
         }
     }
 
-    private List<Document> toDocuments(Resource resource, String layer) {
+    private List<Document> toDocuments(Resource resource, String layer, MarkdownHeadingSplitter splitter) {
         List<Document> raw = new TextReader(resource).get();
-        List<Document> chunks = splitter.apply(raw);
+        List<Document> chunks = raw.stream()
+                .flatMap(doc -> splitter.split(doc).stream())
+                .toList();
         chunks.forEach(doc -> attachMetadata(doc, resource, layer));
         log.debug("파일 청킹: {} → {}개 청크", resource.getFilename(), chunks.size());
         return chunks;
