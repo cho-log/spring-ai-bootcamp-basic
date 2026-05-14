@@ -14,11 +14,21 @@ public class MarkdownHeadingSplitter {
     }
 
     public List<Document> split(Document document) {
-        String[] sections = document.getText().split("(?m)^(?=" + heading + " )");
+        String text = document.getText();
+        String title = extractTitle(text);
+
+        String[] sections = text.split("(?m)^(?=" + heading + " )");
         return Arrays.stream(sections)
                 .map(String::strip)
                 .filter(s -> s.startsWith(heading))
-                .map(Document::new)
+                .map(s -> new Document(title + "\n" + s))
                 .toList();
+    }
+
+    private String extractTitle(String text) {
+        return text.lines()
+                .filter(line -> line.startsWith("# "))
+                .findFirst()
+                .orElse("");
     }
 }
