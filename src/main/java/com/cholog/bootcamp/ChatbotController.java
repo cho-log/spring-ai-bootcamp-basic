@@ -1,8 +1,7 @@
 package com.cholog.bootcamp;
 
-import java.util.Map;
-
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.metadata.Usage;
@@ -64,25 +63,29 @@ public class ChatbotController {
 
     @PostMapping
     public ChatbotResponse chat(@RequestBody ChatbotRequest request) {
-        ChatResponse response = chatClient.prompt()
+        ChatResponse chatResponse = chatClient.prompt()
             .user(request.question())
             .call()
             .chatResponse();
 
-        String answer = response.getResult().getOutput().getText();
-        Usage usage = response.getMetadata().getUsage();
+        String answer = chatResponse.getResult().getOutput().getText();
+        Usage usage = chatResponse.getMetadata().getUsage();
         return ChatbotResponse.from(answer, usage);
     }
 
     @PostMapping("/debug")
-    public Map<String, String> debugChat(@RequestBody ChatbotRequest request) {
-        Object RETRIEVED_DOCUMENTS = chatClient.prompt()
+    public ChatbotResponse debugChat(@RequestBody ChatbotRequest request) {
+        ChatClientResponse chatClientResponse = chatClient.prompt()
             .user(request.question())
             .call()
-            .chatClientResponse()
-            .context()
-            .get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
+            .chatClientResponse();
+
+        Object RETRIEVED_DOCUMENTS = chatClientResponse.context().get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
         log.info("RETRIEVED_DOCUMENTS: {}", RETRIEVED_DOCUMENTS);
-        return Map.of("answer", "answer");
+
+        ChatResponse chatResponse = chatClientResponse.chatResponse();
+        String answer = chatResponse.getResult().getOutput().getText();
+        Usage usage = chatResponse.getMetadata().getUsage();
+        return ChatbotResponse.from(answer, usage);
     }
 }
