@@ -1,4 +1,4 @@
-package com.cholog.bootcamp;
+package com.cholog.bootcamp.controller;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.cholog.bootcamp.controller.dto.ChatbotRequest;
+import com.cholog.bootcamp.controller.dto.ChatbotResponse;
+import com.cholog.bootcamp.MarkdownReader;
 
 import lombok.extern.slf4j.Slf4j;
 

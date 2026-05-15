@@ -1,4 +1,4 @@
-package com.cholog.bootcamp;
+package com.cholog.bootcamp.controller.dto;
 
 import org.springframework.ai.chat.metadata.Usage;
 

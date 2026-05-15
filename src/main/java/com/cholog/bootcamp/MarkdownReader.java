@@ -11,7 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
-class MarkdownReader {
+public class MarkdownReader {
 
     private final Resource[] resources;
 
