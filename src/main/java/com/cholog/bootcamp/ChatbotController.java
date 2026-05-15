@@ -5,6 +5,8 @@ import java.util.Map;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.metadata.Usage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.template.st.StTemplateRenderer;
@@ -61,16 +63,19 @@ public class ChatbotController {
     }
 
     @PostMapping
-    public Map<String, String> chat(@RequestBody ChatRequest request) {
-        String answer = chatClient.prompt()
+    public ChatbotResponse chat(@RequestBody ChatbotRequest request) {
+        ChatResponse response = chatClient.prompt()
             .user(request.question())
             .call()
-            .content();
-        return Map.of("answer", answer);
+            .chatResponse();
+
+        String answer = response.getResult().getOutput().getText();
+        Usage usage = response.getMetadata().getUsage();
+        return ChatbotResponse.from(answer, usage);
     }
 
     @PostMapping("/debug")
-    public Map<String, String> debugChat(@RequestBody ChatRequest request) {
+    public Map<String, String> debugChat(@RequestBody ChatbotRequest request) {
         Object RETRIEVED_DOCUMENTS = chatClient.prompt()
             .user(request.question())
             .call()

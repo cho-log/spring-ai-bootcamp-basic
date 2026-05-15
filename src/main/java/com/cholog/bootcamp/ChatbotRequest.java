@@ -1,6 +1,6 @@
 package com.cholog.bootcamp;
 
-public record ChatRequest(
+public record ChatbotRequest(
     String question
 ) {
 }
