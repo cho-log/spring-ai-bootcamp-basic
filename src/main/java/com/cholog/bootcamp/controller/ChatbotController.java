@@ -25,7 +25,7 @@ public class ChatbotController {
 
     private final ChatbotService chatbotService;
 
-    @PostMapping("/session")
+    @PostMapping("/conversation")
     public ResponseEntity<ChatbotResponse> startConversation(
         @CookieValue(required = false) String conversationId
     ) {
@@ -41,8 +41,8 @@ public class ChatbotController {
             .build();
     }
 
-    @DeleteMapping("/session")
-    public ResponseEntity<ChatbotResponse> endSession(
+    @DeleteMapping("/conversation")
+    public ResponseEntity<ChatbotResponse> endConversation(
         @CookieValue(required = false) String conversationId
     ) {
         if (conversationId != null) {
