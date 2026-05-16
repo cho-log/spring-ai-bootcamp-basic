@@ -2,8 +2,10 @@ package com.cholog.bootcamp.service;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
@@ -27,7 +29,12 @@ public class ChatbotService {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
 
-    public ChatbotService(ChatClient.Builder builder, EmbeddingModel embeddingModel, MarkdownReader markdownReader) {
+    public ChatbotService(
+        ChatClient.Builder builder,
+        EmbeddingModel embeddingModel,
+        MarkdownReader markdownReader,
+        ChatMemory chatMemory
+    ) {
         PromptTemplate customPromptTemplate = PromptTemplate.builder()
             .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
             .template("""
@@ -57,13 +64,18 @@ public class ChatbotService {
             .promptTemplate(customPromptTemplate)
             .searchRequest(SearchRequest.builder().topK(8).build())
             .build();
-        this.chatClient = builder.defaultAdvisors(qaAdvisor, new SimpleLoggerAdvisor()).build();
+        this.chatClient = builder.defaultAdvisors(
+            qaAdvisor,
+            MessageChatMemoryAdvisor.builder(chatMemory).build(),
+            new SimpleLoggerAdvisor()
+        ).build();
         this.vectorStore = vectorStore;
     }
 
-    public ChatbotResponse chat(ChatbotRequest request) {
+    public ChatbotResponse chat(String conversationId, ChatbotRequest request) {
         ChatResponse chatResponse = chatClient.prompt()
             .user(request.question())
+            .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
             .call()
             .chatResponse();
 

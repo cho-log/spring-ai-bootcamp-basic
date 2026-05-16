@@ -1,19 +1,11 @@
 package com.cholog.bootcamp.controller;
 
-import java.util.Map;
+import java.util.UUID;
 
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.ChatClientResponse;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
-import org.springframework.ai.chat.metadata.Usage;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.template.st.StTemplateRenderer;
-import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.SimpleVectorStore;
-import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cholog.bootcamp.dto.ChatbotRequest;
 import com.cholog.bootcamp.dto.ChatbotResponse;
-import com.cholog.bootcamp.MarkdownReader;
 import com.cholog.bootcamp.service.ChatbotService;
 
 import lombok.RequiredArgsConstructor;
@@ -36,8 +27,21 @@ public class ChatbotController {
     private final ChatbotService chatbotService;
 
     @PostMapping
-    public ChatbotResponse chat(@RequestBody ChatbotRequest request) {
-        return chatbotService.chat(request);
+    public ResponseEntity<ChatbotResponse> chat(
+        @CookieValue(required = false) String conversationId,
+        @RequestBody ChatbotRequest request
+    ) {
+        if (conversationId == null) {
+            conversationId = UUID.randomUUID().toString();
+        }
+        ChatbotResponse response = chatbotService.chat(conversationId, request);
+        ResponseCookie responseCookie = ResponseCookie.from("conversationId", conversationId)
+            .httpOnly(true)
+            .secure(true)
+            .build();
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+            .body(response);
     }
 
     @PostMapping("/debug")
