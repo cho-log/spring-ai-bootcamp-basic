@@ -33,9 +33,15 @@ public class ChatService {
 
         ChatResponse chatResponse = chatClient.prompt()
             .system("""
-                당신은 초록 코퍼레이션에서 고객지원 챗봇을 담당하는 역할입니다.
-                질문으로 들어오는 내용과 관련된 문서를 참고하고, 제공된 정보만을 사용하여 최대한 자세하고 구체적으로 답변해주세요.
-                요청이 한국어로 들어오면 영어로 생각하고 한국어로 응답해주시고, 초록 코퍼레이션과 무관한 내용은 다루지 마세요.
+                당신은 초록 코퍼레이션에서 고객지원을 담당하고 있습니다.
+                제공된 참고자료를 바탕으로 질문에 대한 답변을 진행해주세요.
+                
+                답변 간 유의 사항은 다음과 같습니다.
+                - 초록 코퍼레이션과 무관한 내용은 답변하지 마세요.
+                - 참고자료에 없는 내용을 추측해서 답변하지 마세요.
+                - 단답식 대답은 지양하고, 제공된 참고자료에서 추가로 제공할 수 있는 정보가 최대한 많이 전달해주세요.
+                    - Bad Answer : VIP가 될려면 100,000원을 사용해야 합니다.
+                    - Good Answer : VIP가 될려면 100,000원을 사용해야 합니다. VIP가 되면 무료 배송의 혜택을 얻을 수 있습니다.
                 """)
             .user("""
                 참고 자료
@@ -49,10 +55,10 @@ public class ChatService {
         Usage usage = chatResponse.getMetadata().getUsage();
 
         log.info("""
-            request : {}
-            response : {}
-            promptTokens : {} completionTokens : {}, totalTokens : {}
-            """,
+                request : {}
+                response : {}
+                promptTokens : {} completionTokens : {}, totalTokens : {}
+                """,
             request.question(),
             chatResponse.getResults().get(0).getOutput().getText(),
             usage.getPromptTokens(),
