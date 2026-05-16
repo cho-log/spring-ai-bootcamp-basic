@@ -1,5 +1,7 @@
 package com.cholog.bootcamp.service;
 
+import java.util.UUID;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -28,6 +30,7 @@ public class ChatbotService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
+    private final ChatMemory chatMemory;
 
     public ChatbotService(
         ChatClient.Builder builder,
@@ -70,6 +73,7 @@ public class ChatbotService {
             new SimpleLoggerAdvisor()
         ).build();
         this.vectorStore = vectorStore;
+        this.chatMemory = chatMemory;
     }
 
     public ChatbotResponse chat(String conversationId, ChatbotRequest request) {
@@ -97,5 +101,16 @@ public class ChatbotService {
         String answer = chatResponse.getResult().getOutput().getText();
         Usage usage = chatResponse.getMetadata().getUsage();
         return ChatbotResponse.from(answer, usage);
+    }
+
+    public String createConversationId() {
+        return UUID.randomUUID().toString();
+    }
+
+    public void clearConversation(String conversationId) {
+        if (conversationId == null) {
+            throw new NullPointerException("conversationId는 null일 수 없습니다.");
+        }
+        chatMemory.clear(conversationId);
     }
 }
