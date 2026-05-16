@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 public class ChatbotController {
 
-    private final String CONVERSATION_ID_COOKIE = "conversationId";
+    private static final String CONVERSATION_ID_COOKIE = "conversationId";
     private final ChatbotService chatbotService;
 
     @PostMapping("/conversation")
