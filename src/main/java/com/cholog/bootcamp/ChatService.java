@@ -19,17 +19,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ChatService {
 
+    private static final int FAQ_TOP_K = 4;
+    private static final int CURRENT_POLICY_TOP_K = 3;
+    private static final int INTERNAL_POLICY_TOP_K = 2;
+
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
 
     public QuestionAskResponse askQuestion(QuestionAskRequest request) {
-        SearchRequest searchRequest = SearchRequest.builder()
-            .query(request.question())
-            .build();
-        List<Document> documents = vectorStore.similaritySearch(searchRequest);
-        String context = documents.stream()
-            .map(Document::getText)
-            .collect(Collectors.joining("\n\n"));
+        String context = getContext(request.question());
 
         ChatResponse chatResponse = chatClient.prompt()
             .system("""
@@ -72,5 +70,50 @@ public class ChatService {
             usage.getCompletionTokens(),
             usage.getTotalTokens()
         );
+    }
+
+    private String getContext(String question) {
+        List<Document> faqDocuments = search(question, FAQ_TOP_K, "layer == 'layer1_faq'");
+        List<Document> currentPolicyDocuments = search(
+            question,
+            CURRENT_POLICY_TOP_K,
+            "layer == 'layer2_policies' && policy_scope == 'current'"
+        );
+        List<Document> internalPolicyDocuments = search(
+            question,
+            INTERNAL_POLICY_TOP_K,
+            "layer == 'layer2_policies' && policy_scope == 'internal'"
+        );
+
+        return """
+            FAQ
+            %s
+
+            Current Policies
+            %s
+
+            Internal Policies
+            %s
+            """.formatted(
+            toContext(faqDocuments),
+            toContext(currentPolicyDocuments),
+            toContext(internalPolicyDocuments)
+        );
+    }
+
+    private List<Document> search(String question, int topK, String filterExpression) {
+        SearchRequest searchRequest = SearchRequest.builder()
+            .query(question)
+            .topK(topK)
+            .filterExpression(filterExpression)
+            .build();
+
+        return vectorStore.similaritySearch(searchRequest);
+    }
+
+    private String toContext(List<Document> documents) {
+        return documents.stream()
+            .map(Document::getText)
+            .collect(Collectors.joining("\n\n"));
     }
 }
