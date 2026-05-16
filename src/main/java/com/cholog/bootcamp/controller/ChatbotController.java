@@ -23,19 +23,17 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 public class ChatbotController {
 
+    private final String CONVERSATION_ID_COOKIE = "conversationId";
     private final ChatbotService chatbotService;
 
     @PostMapping("/conversation")
     public ResponseEntity<ChatbotResponse> startConversation(
-        @CookieValue(required = false) String conversationId
+        @CookieValue(value = CONVERSATION_ID_COOKIE, required = false) String conversationId
     ) {
         if (conversationId != null) {
             chatbotService.clearConversation(conversationId);
         }
-        ResponseCookie responseCookie = ResponseCookie.from("conversationId", chatbotService.createConversationId())
-            .httpOnly(true)
-            .secure(true)
-            .build();
+        ResponseCookie responseCookie = createConversationCookie(chatbotService.createConversationId());
         return ResponseEntity.noContent()
             .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
             .build();
@@ -43,16 +41,12 @@ public class ChatbotController {
 
     @DeleteMapping("/conversation")
     public ResponseEntity<ChatbotResponse> endConversation(
-        @CookieValue(required = false) String conversationId
+        @CookieValue(value = CONVERSATION_ID_COOKIE, required = false) String conversationId
     ) {
         if (conversationId != null) {
             chatbotService.clearConversation(conversationId);
         }
-        ResponseCookie deleteCookie = ResponseCookie.from("conversationId", conversationId)
-            .httpOnly(true)
-            .secure(true)
-            .maxAge(0)
-            .build();
+        ResponseCookie deleteCookie = expireConversationCookie();
         return ResponseEntity.noContent()
             .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
             .build();
@@ -60,17 +54,14 @@ public class ChatbotController {
 
     @PostMapping
     public ResponseEntity<ChatbotResponse> chat(
-        @CookieValue(required = false) String conversationId,
+        @CookieValue(value = CONVERSATION_ID_COOKIE, required = false) String conversationId,
         @RequestBody ChatbotRequest request
     ) {
         if (conversationId == null) {
             conversationId = chatbotService.createConversationId();
         }
         ChatbotResponse response = chatbotService.chat(conversationId, request);
-        ResponseCookie responseCookie = ResponseCookie.from("conversationId", conversationId)
-            .httpOnly(true)
-            .secure(true)
-            .build();
+        ResponseCookie responseCookie = createConversationCookie(conversationId);
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
             .body(response);
@@ -79,5 +70,24 @@ public class ChatbotController {
     @PostMapping("/debug")
     public ChatbotResponse debugChat(@RequestBody ChatbotRequest request) {
         return chatbotService.debugChat(request);
+    }
+
+    private ResponseCookie createConversationCookie(String conversationId) {
+        return ResponseCookie.from(CONVERSATION_ID_COOKIE, conversationId)
+            .httpOnly(true)
+            .secure(false)
+            .path("/")
+            .sameSite("Lax")
+            .build();
+    }
+
+    private ResponseCookie expireConversationCookie() {
+        return ResponseCookie.from(CONVERSATION_ID_COOKIE, "")
+            .httpOnly(true)
+            .secure(false)
+            .path("/")
+            .sameSite("Lax")
+            .maxAge(0)
+            .build();
     }
 }
