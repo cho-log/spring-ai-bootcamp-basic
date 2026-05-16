@@ -22,6 +22,7 @@ public class ChatService {
     private static final int FAQ_TOP_K = 4;
     private static final int CURRENT_POLICY_TOP_K = 3;
     private static final int INTERNAL_POLICY_TOP_K = 2;
+    private static final int CHAT_LOG_TOP_K = 2;
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
@@ -73,6 +74,29 @@ public class ChatService {
     }
 
     private String getContext(String question) {
+        SearchResult searchResult = searchDocuments(question);
+
+        return """
+            FAQ
+            %s
+
+            Current Policies
+            %s
+
+            Internal Policies
+            %s
+
+            Chat Logs
+            %s
+            """.formatted(
+            toContext(searchResult.faqDocuments()),
+            toContext(searchResult.currentPolicyDocuments()),
+            toContext(searchResult.internalPolicyDocuments()),
+            toContext(searchResult.chatLogDocuments())
+        );
+    }
+
+    private SearchResult searchDocuments(String question) {
         List<Document> faqDocuments = search(question, FAQ_TOP_K, "layer == 'layer1_faq'");
         List<Document> currentPolicyDocuments = search(
             question,
@@ -84,21 +108,13 @@ public class ChatService {
             INTERNAL_POLICY_TOP_K,
             "layer == 'layer2_policies' && policy_scope == 'internal'"
         );
-
-        return """
-            FAQ
-            %s
-
-            Current Policies
-            %s
-
-            Internal Policies
-            %s
-            """.formatted(
-            toContext(faqDocuments),
-            toContext(currentPolicyDocuments),
-            toContext(internalPolicyDocuments)
+        List<Document> chatLogDocuments = search(
+            question,
+            CHAT_LOG_TOP_K,
+            "layer == 'layer3_chatlogs' && agent_accuracy == 'correct'"
         );
+
+        return new SearchResult(faqDocuments, currentPolicyDocuments, internalPolicyDocuments, chatLogDocuments);
     }
 
     private List<Document> search(String question, int topK, String filterExpression) {
@@ -115,5 +131,13 @@ public class ChatService {
         return documents.stream()
             .map(Document::getText)
             .collect(Collectors.joining("\n\n"));
+    }
+
+    private record SearchResult(
+        List<Document> faqDocuments,
+        List<Document> currentPolicyDocuments,
+        List<Document> internalPolicyDocuments,
+        List<Document> chatLogDocuments
+    ) {
     }
 }

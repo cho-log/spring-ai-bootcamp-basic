@@ -27,6 +27,7 @@ public class VectorStoreConfig {
         FaqReader faqReader,
         CurrentPolicyReader currentPolicyReader,
         InternalPolicyReader internalPolicyReader,
+        ChatLogReader chatLogReader,
         VectorStore vectorStore
     ) {
         return args -> {
@@ -34,6 +35,7 @@ public class VectorStoreConfig {
             documents.addAll(faqReader.read());
             documents.addAll(currentPolicyReader.read());
             documents.addAll(internalPolicyReader.read());
+            documents.addAll(chatLogReader.read());
 
             vectorStore.add(documents);
             log.info("Loaded {} documents into VectorStore", documents.size());
