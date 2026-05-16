@@ -1,4 +1,4 @@
-package com.cholog.bootcamp;
+package com.cholog.bootcamp.service;
 
 import java.util.ArrayList;
 import java.util.List;
