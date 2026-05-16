@@ -138,6 +138,7 @@ def main():
     for i, q in enumerate(questions):
         qid = q.get("id", f"Q{i+1}")
         question_ko = q["question_ko"]
+        question_en = q["question_en"]
         expected = q["expected_answer"]
         tier = q.get("tier", "unknown")
 
@@ -146,7 +147,8 @@ def main():
         tier_results[tier]["total"] += 1
 
         # 서버에 질문
-        response = ask_server(question_ko)
+#         response = ask_server(question_ko)
+        response = ask_server(question_en)
         if response is None:
             results["error"] += 1
             if args.verbose:
