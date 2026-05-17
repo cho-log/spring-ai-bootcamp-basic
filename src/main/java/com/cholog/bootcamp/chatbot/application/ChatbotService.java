@@ -2,6 +2,7 @@ package com.cholog.bootcamp.chatbot.application;
 
 import com.cholog.bootcamp.chatbot.application.dto.ChatbotResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 
 import org.springframework.ai.chat.model.ChatResponse;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatbotService {
@@ -43,13 +45,24 @@ public class ChatbotService {
         List<Document> docs = vectorStore.similaritySearch(
                 SearchRequest.builder()
                         .query(question)
-                        .topK(5)
+                        .topK(8)
                         .build()
         );
+
+        //loggingSearchedDocs(question, docs);
 
         return docs.stream()
                 .map(Document::getText)
                 .collect(Collectors.joining("\n\n"));
+    }
+
+    private static void loggingSearchedDocs(String question, List<Document> docs) {
+        log.info("=== [RAG] 검색된 문서 ({}개) for: {} ===", docs.size(), question);
+        for (int i = 0; i < docs.size(); i++) {
+            Document doc = docs.get(i);
+            String preview = doc.getText().substring(0, Math.min(120, doc.getText().length())).replace("\n", " ");
+            log.info("[{}] metadata={} | text={}", i + 1, doc.getMetadata(), preview);
+        }
     }
 
 }
