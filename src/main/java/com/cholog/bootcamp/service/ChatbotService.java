@@ -14,6 +14,7 @@ import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.rag.Query;
+import org.springframework.ai.rag.postretrieval.document.DocumentPostProcessor;
 import org.springframework.ai.rag.preretrieval.query.expansion.MultiQueryExpander;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -32,25 +33,38 @@ public class ChatbotService {
     private final ChatMemory chatMemory;
     private final VectorStore vectorStore;
     private final ChatClient.Builder chatClientBuilder;
+    private final DocumentPostProcessor documentPostProcessor;
 
     public ChatbotService(
         VectorStore vectorStore,
         MarkdownReader markdownReader,
         ChatMemory chatMemory,
-        ChatClient.Builder chatClientBuilder
+        ChatClient.Builder chatClientBuilder,
+        DocumentPostProcessor documentPostProcessor
     ) {
         MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
         this.chatClient = chatClientBuilder.defaultAdvisors(messageChatMemoryAdvisor).build();
         this.chatMemory = chatMemory;
         this.chatClientBuilder = chatClientBuilder;
+        this.documentPostProcessor = documentPostProcessor;
         this.vectorStore = vectorStore;
         vectorStore.add(markdownReader.loadAll());
     }
 
     public ChatbotResponse chat(String conversationId, ChatbotRequest request) {
-        List<Document> documents = getDocumentsWithQueryExpansion(request.question());
-        String context = getContext(documents);
-        log.info("context: {}", context);
+        // List<Document> documents = getDocumentsWithQueryExpansion(request.question());
+        SearchRequest searchRequest = getSearchRequest(request.question(), 10);
+        List<Document> documents = vectorStore.similaritySearch(searchRequest);
+        documents = documentPostProcessor.apply(Query.builder().text(request.question()).build(), documents);
+        List<Document> subList = documents.subList(0, Math.min(documents.size(), 4));
+        String context = getContext(subList);
+        System.out.println("==========");
+        for (Document document : subList) {
+            System.out.println(document.getMetadata().get("filename"));
+            System.out.println(document.getText());
+            System.out.println();
+        }
+        System.out.println("==========");
         ChatResponse chatResponse = chatClient.prompt()
             .system("""
                 당신은 초록 고객센터의 챗봇입니다.
@@ -97,7 +111,7 @@ public class ChatbotService {
             log.info("query: {}", query.text());
         }
         List<Document> rawDocuments = queries.stream()
-            .flatMap(query -> vectorStore.similaritySearch(getSearchRequest(query.text())).stream())
+            .flatMap(query -> vectorStore.similaritySearch(getSearchRequest(query.text(), 4)).stream())
             .toList();
         Map<String, Document> bestScoreByText = rawDocuments.stream()
             .collect(Collectors.toMap(
@@ -108,10 +122,10 @@ public class ChatbotService {
         return new ArrayList<>(bestScoreByText.values());
     }
 
-    private SearchRequest getSearchRequest(String query) {
+    private SearchRequest getSearchRequest(String query, int k) {
         return SearchRequest.builder()
             .query(query)
-            .topK(4)
+            .topK(k)
             .build();
     }
 
