@@ -20,9 +20,10 @@ public class CurrentPolicyReader {
 
     public List<Document> read() {
         try (Stream<Path> paths = Files.list(DIRECTORY)) {
-            return paths
-                .flatMap(path -> readFile(path).stream())
-                .toList();
+            List<Document> documents = new ArrayList<>();
+            paths.sorted()
+                .forEach(path -> documents.addAll(readFile(path)));
+            return documents;
         } catch (IOException e) {
             throw new IllegalArgumentException("");
         }
@@ -38,35 +39,22 @@ public class CurrentPolicyReader {
 
     private List<Document> parse(Path path, List<String> lines) {
         List<Document> documents = new ArrayList<>();
-        Map<String, Object> metadata = new HashMap<>();
-        String title = path.getFileName().toString();
+        String category = null;
         String section = null;
         StringBuilder sectionBody = new StringBuilder();
-        boolean frontMatter = false;
-        boolean frontMatterDone = false;
 
         for (String line : lines) {
-            if (!frontMatterDone && line.equals("---")) {
-                if (!frontMatter) {
-                    frontMatter = true;
-                } else {
-                    frontMatterDone = true;
-                }
-                continue;
-            }
-
-            if (frontMatter && !frontMatterDone) {
-                parseMetadata(line, metadata);
-                continue;
-            }
-
             if (line.startsWith("# ")) {
-                title = line.substring(2).trim();
+                category = line.substring(2).trim();
+                continue;
+            }
+
+            if (category == null) {
                 continue;
             }
 
             if (line.startsWith("## ")) {
-                addDocument(documents, path, metadata, title, section, sectionBody);
+                addDocument(documents, path, category, section, sectionBody);
                 section = line.substring(3).trim();
                 sectionBody.setLength(0);
                 continue;
@@ -77,29 +65,15 @@ public class CurrentPolicyReader {
             }
         }
 
-        addDocument(documents, path, metadata, title, section, sectionBody);
+        addDocument(documents, path, category, section, sectionBody);
 
         return documents;
-    }
-
-    private void parseMetadata(String line, Map<String, Object> metadata) {
-        int separator = line.indexOf(':');
-        if (separator < 0) {
-            return;
-        }
-
-        String key = line.substring(0, separator).trim();
-        String value = line.substring(separator + 1).trim();
-        if (!key.isBlank() && !value.isBlank()) {
-            metadata.put(key, value);
-        }
     }
 
     private void addDocument(
         List<Document> documents,
         Path path,
-        Map<String, Object> fileMetadata,
-        String title,
+        String category,
         String section,
         StringBuilder sectionBody
     ) {
@@ -112,17 +86,13 @@ public class CurrentPolicyReader {
             return;
         }
 
-        Map<String, Object> metadata = new HashMap<>(fileMetadata);
+        Map<String, Object> metadata = new HashMap<>();
         metadata.put("layer", "layer2_policies");
         metadata.put("policy_scope", "current");
-        metadata.put("source", path.getFileName().toString());
-        metadata.put("title", metadata.getOrDefault("title", title));
+        metadata.put("filepath", path.toString());
+        metadata.put("category", category);
         metadata.put("section", section);
 
-        documents.add(new Document("""
-            Policy: %s
-            Section: %s
-            %s
-            """.formatted(metadata.get("title"), section, body).trim(), metadata));
+        documents.add(new Document(body, metadata));
     }
 }
