@@ -1,4 +1,4 @@
-package com.cholog.bootcamp;
+package com.cholog.bootcamp.dto;
 
 public record QuestionAskResponse(
     String answer,

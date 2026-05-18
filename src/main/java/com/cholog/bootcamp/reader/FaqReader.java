@@ -1,4 +1,4 @@
-package com.cholog.bootcamp;
+package com.cholog.bootcamp.reader;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,16 +13,18 @@ import java.util.stream.Stream;
 import org.springframework.ai.document.Document;
 import org.springframework.stereotype.Component;
 
-@Component
-public class CurrentPolicyReader {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Path DIRECTORY = Path.of("data/layer2_policies/current");
+@Slf4j
+@Component
+public class FaqReader {
+
+    private static final Path FAQ_DIRECTORY = Path.of("data/layer1_faq");
 
     public List<Document> read() {
-        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+        try (Stream<Path> paths = Files.list(FAQ_DIRECTORY)) {
             List<Document> documents = new ArrayList<>();
-            paths.sorted()
-                .forEach(path -> documents.addAll(readFile(path)));
+            paths.forEach(path -> documents.addAll(readFile(path)));
             return documents;
         } catch (IOException e) {
             throw new IllegalArgumentException("");
@@ -40,8 +42,8 @@ public class CurrentPolicyReader {
     private List<Document> parse(Path path, List<String> lines) {
         List<Document> documents = new ArrayList<>();
         String category = null;
-        String section = null;
-        StringBuilder sectionBody = new StringBuilder();
+        String question = null;
+        StringBuilder body = new StringBuilder();
 
         for (String line : lines) {
             if (line.startsWith("# ")) {
@@ -49,50 +51,45 @@ public class CurrentPolicyReader {
                 continue;
             }
 
-            if (category == null) {
-                continue;
-            }
-
             if (line.startsWith("## ")) {
-                addDocument(documents, path, category, section, sectionBody);
-                section = line.substring(3).trim();
-                sectionBody.setLength(0);
                 continue;
             }
 
-            if (section != null) {
-                sectionBody.append(line).append('\n');
+            if (line.startsWith("### ")) {
+                addDocument(documents, path, category, question, body);
+                question = line.substring(4).trim();
+                body.setLength(0);
+                continue;
+            }
+
+            if (question != null) {
+                body.append(line).append('\n');
             }
         }
 
-        addDocument(documents, path, category, section, sectionBody);
+        addDocument(documents, path, category, question, body);
 
         return documents;
     }
 
     private void addDocument(
-        List<Document> documents,
-        Path path,
-        String category,
-        String section,
-        StringBuilder sectionBody
+        List<Document> documents, Path path, String category, String question, StringBuilder body
     ) {
-        if (section == null) {
+        if (question == null) {
             return;
         }
 
-        String body = sectionBody.toString().trim();
-        if (body.isBlank()) {
+        String text = body.toString().trim();
+        if (text.isBlank()) {
             return;
         }
 
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("layer", "layer2_policies");
-        metadata.put("policy_scope", "current");
+        metadata.put("question", question);
+        metadata.put("layer", "layer1_faq");
         metadata.put("filepath", path.toString());
         metadata.put("category", category);
-        metadata.put("section", section);
 
-        documents.add(new Document(body, metadata));
+        documents.add(new Document(text, metadata));
     }
 }

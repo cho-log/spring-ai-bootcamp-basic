@@ -1,4 +1,4 @@
-package com.cholog.bootcamp;
+package com.cholog.bootcamp.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,6 +10,9 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
+
+import com.cholog.bootcamp.dto.QuestionAskRequest;
+import com.cholog.bootcamp.dto.QuestionAskResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

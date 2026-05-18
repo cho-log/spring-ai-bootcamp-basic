@@ -1,4 +1,4 @@
-package com.cholog.bootcamp;
+package com.cholog.bootcamp.reader;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

@@ -1,4 +1,4 @@
-package com.cholog.bootcamp;
+package com.cholog.bootcamp.config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,11 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.cholog.bootcamp.reader.ChatLogReader;
+import com.cholog.bootcamp.reader.CurrentPolicyReader;
+import com.cholog.bootcamp.reader.FaqReader;
+import com.cholog.bootcamp.reader.InternalPolicyReader;
 
 import lombok.extern.slf4j.Slf4j;
 
