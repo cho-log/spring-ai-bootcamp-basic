@@ -27,7 +27,7 @@ public class ChatClientConfig {
         // 어드바이저
         QuestionAnswerAdvisor qaAdvisor = QuestionAnswerAdvisor.builder(vectorStore)
             .promptTemplate(customPromptTemplate)
-            .searchRequest(SearchRequest.builder().topK(8).build())
+            .searchRequest(SearchRequest.builder().topK(6).build())
             .build();
         MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
         SimpleLoggerAdvisor simpleLoggerAdvisor = new SimpleLoggerAdvisor();
@@ -41,23 +41,25 @@ public class ChatClientConfig {
         return PromptTemplate.builder()
             .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
             .template("""
-            <query>
-
-            아래는 컨텍스트 정보입니다.
-            
-            ---------------------
-            <question_answer_context>
-            ---------------------
-            
-            컨텍스트 정보를 바탕으로 질문에 답하세요.
-
-			답변 시 아래 룰을 따르세요:
-			1. 절대 컨텍스트에 없는 내용을 추론하거나 지어내지 마세요. 응답은 컨텍스트 정보를 기반으로 확인되는 사실만 답합니다.
-			2. 사용자가 질문한 부분에 대해서만 답하기 보다는 관련 정보 중 사용자에게 유용한 정보라고 판단되면 함께 답변에 포함해주세요.
-			예시)
-			Q. 적립 포인트 1점은 얼마의 가치인가요?
-			- 추천하지 않는 답변: "적립 포인트 1점의 가치는 1원입니다."와 같이 단순 정보만 제공하고 끝나는 답변.
-			- 추천하는 답변: 적립 포인트 모으는 방법, 적립 정책, 적립금 소멸, 적립금 가치 등 적립 포인트 관련 핵심 정보를 담은 간단명료한 답변.
+                당신은 초록 고객센터의 챗봇입니다.
+                다음 주어진 내용을 참고해 [사용자의 질문]에 답변해주세요.
+                
+                답변 규칙
+                - 만약 주어진 내용으로 답변할 수 없다면 모르겠다고 안내하세요.
+                - 내용이 충돌하는 경우 다음 우선순위를 따라 답변 합니다.
+                    - 질문 도메인과 가장 근접한 내용
+                    - 더 구체적인 상황을 다루는 내용
+                    - 더 최신 버전의 내용
+                             
+                ---
+                
+                [관련 내용]
+                <question_answer_context>
+                
+                ---
+                
+                [사용자 질문]
+                <query>
             """)
             .build();
     }

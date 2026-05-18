@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class MarkdownReader {
 
@@ -32,6 +35,14 @@ public class MarkdownReader {
             MarkdownDocumentReader reader = new MarkdownDocumentReader(resource, config);
             allDocuments.addAll(reader.get());
         }
+
+        allDocuments.forEach(doc -> log.info(
+            "filename={}, title={}, text={}",
+            doc.getMetadata().get("filename"),
+            doc.getMetadata().get("title"),
+            doc.getText()
+        ));
+
         return allDocuments;
     }
 }
