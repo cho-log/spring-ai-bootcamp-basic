@@ -80,11 +80,9 @@ def judge_answer(question: str, expected: str, actual: str) -> dict:
 실제 답변 (챗봇): {actual}
 
 실제 답변이 기대 답변과 사실적으로 일치하는지 평가하세요.
-- 기대 답변에 여러 정보가 포함되어 있더라도, 질문에 직접 답하는 핵심 사실을 정확히 전달했다면 정답입니다
-- 실제 답변이 기대 답변보다 짧거나 부가 정보를 생략했더라도, 질문의 의도에 필요한 핵심 답변이 맞으면 정답입니다
-- 질문과 직접 관련된 핵심 사실이 빠졌거나 틀렸으면 오답입니다
-- 실제 답변에 기대 답변과 충돌하는 잘못된 정보가 포함되어 있으면 오답입니다
-- 기대 답변의 모든 문장을 그대로 포함했는지가 아니라, 질문에 대한 답변으로 충분한지를 기준으로 판단하세요
+- 질문에 필요한 핵심 사실을 정확히 답했다면, 기대 답변보다 짧거나 부가 정보가 없어도 정답입니다.
+- 핵심 사실이 빠졌거나 틀렸거나, 기대 답변과 충돌하는 정보가 있으면 오답입니다.
+- 문장 일치가 아니라 질문에 대한 충분성을 기준으로 판단하세요.
 
 JSON으로만 응답하세요:
 {{"score": 1, "reason": "..."}}  (정답)
@@ -149,8 +147,8 @@ def main():
         tier_results[tier]["total"] += 1
 
         # 서버에 질문
-#         response = ask_server(question_ko)
-        response = ask_server(question_en)
+        response = ask_server(question_ko)
+#         response = ask_server(question_en)
         if response is None:
             results["error"] += 1
             if args.verbose:
