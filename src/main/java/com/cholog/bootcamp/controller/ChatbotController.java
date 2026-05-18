@@ -67,11 +67,6 @@ public class ChatbotController {
             .body(response);
     }
 
-    @PostMapping("/debug")
-    public ChatbotResponse debugChat(@RequestBody ChatbotRequest request) {
-        return chatbotService.debugChat(request);
-    }
-
     private ResponseCookie createConversationCookie(String conversationId) {
         return ResponseCookie.from(CONVERSATION_ID_COOKIE, conversationId)
             .httpOnly(true)

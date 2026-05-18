@@ -3,17 +3,12 @@ package com.cholog.bootcamp.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -120,21 +115,6 @@ public class ChatbotService {
             .build();
     }
 
-    public ChatbotResponse debugChat(ChatbotRequest request) {
-        ChatClientResponse chatClientResponse = chatClient.prompt()
-            .user(request.question())
-            .call()
-            .chatClientResponse();
-
-        Object RETRIEVED_DOCUMENTS = chatClientResponse.context().get(QuestionAnswerAdvisor.RETRIEVED_DOCUMENTS);
-        log.info("RETRIEVED_DOCUMENTS: {}", RETRIEVED_DOCUMENTS);
-
-        ChatResponse chatResponse = chatClientResponse.chatResponse();
-        String answer = chatResponse.getResult().getOutput().getText();
-        Usage usage = chatResponse.getMetadata().getUsage();
-        return ChatbotResponse.from(answer, usage);
-    }
-
     public String createConversationId() {
         return UUID.randomUUID().toString();
     }
@@ -145,10 +125,4 @@ public class ChatbotService {
         }
         chatMemory.clear(conversationId);
     }
-
-    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-        Set<Object> seen = ConcurrentHashMap.newKeySet();
-        return t -> seen.add(keyExtractor.apply(t));
-    }
-
 }
