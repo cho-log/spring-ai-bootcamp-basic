@@ -7,9 +7,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -18,6 +22,7 @@ public class FrequentlyQuestionChatApiService {
 
     private final ChatClient chatClient;
     private final PricingCalculator pricingCalculator;
+    private final VectorStore vectorStore;
 
     public FrequentlyQuestionChatResponseDto chat(FrequentlyQuestionChatRequestDto requestDto) {
         var prompt = Prompt.builder()
@@ -25,6 +30,48 @@ public class FrequentlyQuestionChatApiService {
                 .build();
 
         var response = chatClient.prompt(prompt)
+                .call()
+                .chatResponse();
+
+        if (response == null) {
+            return new FrequentlyQuestionChatResponseDto(
+                    "응답이 없습니다.", TokenUsage.EMPTY
+            );
+        }
+
+        var generation = response.getResult().getOutput();
+        var metadata = response.getMetadata();
+
+        var usage = TokenUsage.from(metadata.getUsage());
+        var price = calculateModelPrice(metadata.getModel(), usage);
+
+        log.info("[{}] 토큰 사용량: {}, 토큰 비용: {}$\n결과: {}", metadata.getModel(), usage, price, generation.getText());
+        return new FrequentlyQuestionChatResponseDto(generation.getText(), usage);
+    }
+
+    public FrequentlyQuestionChatResponseDto chatWithRag(FrequentlyQuestionChatRequestDto requestDto) {
+
+        String question = requestDto.question();
+
+        var hits = vectorStore.similaritySearch(SearchRequest.builder()
+                .query(question)
+                .topK(8)
+                .build());
+        log.info("hits 결과: {}", hits.stream().map(Document::getId).toList());
+
+        var context = hits.stream()
+                .map(d -> "## " + d.getMetadata().get("source") + "\n" + d.getText())
+                .collect(Collectors.joining("\n\n---\n\n"));
+
+        var response = chatClient.prompt(context)
+                .user(u -> u.text("""
+                                참고 문서:
+                                {context}
+                                
+                                질문: {question}
+                                """)
+                        .param("context", context)
+                        .param("question", question))
                 .call()
                 .chatResponse();
 

@@ -4,8 +4,7 @@ import com.cholog.bootcamp.dto.FrequentlyQuestionChatRequestDto;
 import com.cholog.bootcamp.dto.FrequentlyQuestionChatResponseDto;
 import com.cholog.bootcamp.service.FrequentlyQuestionChatApiService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,9 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
+@Slf4j
 public class FrequentlyQuestionChatApiController {
-
-    private static final Logger log = LoggerFactory.getLogger(FrequentlyQuestionChatApiController.class);
 
     private final FrequentlyQuestionChatApiService frequentlyQuestionChatApiService;
 
@@ -27,7 +25,7 @@ public class FrequentlyQuestionChatApiController {
     ) {
         log.info("FAQ 요청이 들어왔습니다. {}", dto.question());
         // TODO 서비스 레이어 및 응답 구현
-        var response = frequentlyQuestionChatApiService.chat(dto);
+        var response = frequentlyQuestionChatApiService.chatWithRag(dto);
         return ResponseEntity.ok(response);
     }
 }

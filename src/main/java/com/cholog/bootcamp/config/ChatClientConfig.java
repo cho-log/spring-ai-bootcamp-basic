@@ -47,11 +47,7 @@ public class ChatClientConfig {
 
         return builder
                 .defaultSystem(spec -> spec
-                        .text(systemTemplate)
-                        .params(Map.of(
-                                "faq", faq,
-                                "policies", policies,
-                                "examples", examples)))
+                        .text(systemTemplate))
                 .build();
     }
 

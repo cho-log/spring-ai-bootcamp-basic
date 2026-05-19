@@ -1,6 +1,5 @@
 package com.cholog.bootcamp.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -25,7 +24,6 @@ public class VectorStoreConfig {
 
     @Bean
     public VectorStore vectorStore(EmbeddingModel model,
-                                   @Value("classpath:prompts/faq-system.st") Resource systemTemplateResource,
                                    @Value("classpath:layer1_faq/*.md") Resource[] faqResources,
                                    @Value("classpath:layer2_policies/current/*.md") Resource[] policyResources,
                                    @Value("classpath:layer3_examples/*.md") Resource[] exampleResources) {
@@ -36,7 +34,20 @@ public class VectorStoreConfig {
         documents.addAll(toDocuments(policyResources, "policy"));
         documents.addAll(toDocuments(exampleResources, "example"));
 
-        var chunks = new TokenTextSplitter().apply(documents);
+
+        TokenTextSplitter splitter = TokenTextSplitter.builder()
+                .withChunkSize(400)
+                .withMinChunkSizeChars(200)
+                .withMaxNumChunks(10000)
+                .withKeepSeparator(true)
+                .build();
+        var chunks = splitter.apply(documents);
+        chunks.forEach(chunk -> {
+            if (chunk.getText() != null) {
+                log.info("chunk ID: {}, TEXT: {}", chunk.getId(),
+                        chunk.getText().substring(0, Math.min(80, chunk.getText().length())).replace("\n", " "));
+            }
+        });
 
         store.add(chunks);
         log.info("vector store 적재 완료. 원본 {} -> 청크 {}", documents.size(), chunks.size());
