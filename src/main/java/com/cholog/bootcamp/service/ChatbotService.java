@@ -48,7 +48,9 @@ public class ChatbotService {
         DocumentPostProcessor documentPostProcessor
     ) {
         MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
-        this.chatClient = chatClientBuilder.defaultAdvisors(messageChatMemoryAdvisor).build();
+        this.chatClient = chatClientBuilder
+            // .defaultAdvisors(messageChatMemoryAdvisor)
+            .build();
         this.chatMemory = chatMemory;
         this.chatClientBuilder = chatClientBuilder;
         this.documentPostProcessor = documentPostProcessor;
@@ -96,7 +98,7 @@ public class ChatbotService {
                 [컨텍스트]
                 %s
             """.formatted(request.question(), context))
-            .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+            // .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
             .call()
             .chatResponse();
 
