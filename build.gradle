@@ -26,17 +26,12 @@ dependencyManagement {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    implementation 'org.springframework.ai:spring-ai-vector-store'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-    testLogging {
-        showStandardStreams = true
-    }
-
-    // .env 파일에서 환경변수 로딩
+def loadDotEnv = { task ->
     def envFile = rootProject.file('.env')
     if (envFile.exists()) {
         envFile.readLines().each { line ->
@@ -46,9 +41,22 @@ tasks.named('test') {
                 if (idx > 0) {
                     def key = trimmed.substring(0, idx).trim()
                     def value = trimmed.substring(idx + 1).trim()
-                    environment(key, value)
+                    task.environment(key, value)
                 }
             }
         }
     }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+    }
+
+    loadDotEnv(delegate)
+}
+
+tasks.named('bootRun') {
+    loadDotEnv(delegate)
 }
