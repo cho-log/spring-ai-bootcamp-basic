@@ -83,7 +83,7 @@ public class InternalPolicyReader {
         }
 
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("layer", "layer2_policies");
+        metadata.put("layer", "layer2_internal");
         metadata.put("policy_scope", "internal");
         metadata.put("filepath", path.toString());
         metadata.put("category", category);
