@@ -3,8 +3,6 @@ package com.cholog.bootcamp.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.print.Doc;
-
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -80,13 +78,13 @@ public class ChatService {
         return """
             FAQ
             %s
-
+            
             Current Policies
             %s
-
+            
             Internal Policies
             %s
-
+            
             Chat Logs
             %s
             """.formatted(
