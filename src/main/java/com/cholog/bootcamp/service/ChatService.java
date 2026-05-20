@@ -43,6 +43,7 @@ public class ChatService {
                 답변 간 유의 사항은 다음과 같습니다.
                 - 초록 코퍼레이션과 무관한 내용은 답변하지 마세요.
                 - 참고자료에 없는 내용을 추측해서 답변하지 마세요.
+                - Chatlog의 경우 FAQ, Current Policies, Internal Policies의 내용들과 비교했을 때 불일치할 경우 답변간 근거로 사용하지 마세요.
                 """)
             .user("""
                 참고 자료
