@@ -1,4 +1,4 @@
-package com.cholog.bootcamp.chatbot.infrastructure;
+package com.cholog.bootcamp.chatbot.util;
 
 import org.springframework.ai.document.Document;
 

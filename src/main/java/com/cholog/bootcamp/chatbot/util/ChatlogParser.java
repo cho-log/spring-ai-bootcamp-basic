@@ -1,4 +1,4 @@
-package com.cholog.bootcamp.chatbot.infrastructure;
+package com.cholog.bootcamp.chatbot.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
