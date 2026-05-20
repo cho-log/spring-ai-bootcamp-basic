@@ -1,22 +1,13 @@
 package com.cholog.bootcamp.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.rag.Query;
-import org.springframework.ai.rag.postretrieval.document.DocumentPostProcessor;
-import org.springframework.ai.rag.preretrieval.query.expansion.MultiQueryExpander;
 import org.springframework.ai.reader.TextReader;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -34,32 +25,21 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatbotService {
 
     private final ChatClient chatClient;
-    private final ChatMemory chatMemory;
     private final VectorStore vectorStore;
-    private final ChatClient.Builder chatClientBuilder;
-    private final DocumentPostProcessor documentPostProcessor;
     private final ResourcePatternResolver resolver;
 
     public ChatbotService(
         VectorStore vectorStore,
         MarkdownReader markdownReader,
-        ChatMemory chatMemory,
-        ChatClient.Builder chatClientBuilder,
-        DocumentPostProcessor documentPostProcessor
+        ChatClient.Builder chatClientBuilder
     ) {
-        MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
-        this.chatClient = chatClientBuilder
-            // .defaultAdvisors(messageChatMemoryAdvisor)
-            .build();
-        this.chatMemory = chatMemory;
-        this.chatClientBuilder = chatClientBuilder;
-        this.documentPostProcessor = documentPostProcessor;
+        this.chatClient = chatClientBuilder.build();
         this.vectorStore = vectorStore;
         vectorStore.add(markdownReader.loadAll());
         this.resolver = new PathMatchingResourcePatternResolver();
     }
 
-    public ChatbotResponse chat(String conversationId, ChatbotRequest request) {
+    public ChatbotResponse chat(ChatbotRequest request) {
         SearchRequest searchRequest = getSearchRequest(request.question(), 4);
         List<Document> documents = vectorStore.similaritySearch(searchRequest);
         documents = documents.stream()
@@ -98,7 +78,6 @@ public class ChatbotService {
                 [컨텍스트]
                 %s
             """.formatted(request.question(), context))
-            // .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
             .call()
             .chatResponse();
 
@@ -119,38 +98,5 @@ public class ChatbotService {
             .query(query)
             .topK(k)
             .build();
-    }
-
-    public String createConversationId() {
-        return UUID.randomUUID().toString();
-    }
-
-    public void clearConversation(String conversationId) {
-        if (conversationId == null) {
-            throw new NullPointerException("conversationId는 null일 수 없습니다.");
-        }
-        chatMemory.clear(conversationId);
-    }
-
-    private List<Document> getDocumentsWithQueryExpansion(String question) {
-        MultiQueryExpander queryExpander = MultiQueryExpander.builder()
-            .chatClientBuilder(chatClientBuilder)
-            .numberOfQueries(4)
-            .build();
-        List<Query> queries = queryExpander.expand(new Query(question));
-        log.info("query expansion(4): ");
-        for (Query query : queries) {
-            log.info("query: {}", query.text());
-        }
-        List<Document> rawDocuments = queries.stream()
-            .flatMap(query -> vectorStore.similaritySearch(getSearchRequest(query.text(), 4)).stream())
-            .toList();
-        Map<String, Document> bestScoreByText = rawDocuments.stream()
-            .collect(Collectors.toMap(
-                Document::getText,
-                Function.identity(),
-                (d1, d2) -> d1.getScore() >= d2.getScore() ? d1 : d2 // 충돌 시 높은 score 선택
-            ));
-        return new ArrayList<>(bestScoreByText.values());
     }
 }
