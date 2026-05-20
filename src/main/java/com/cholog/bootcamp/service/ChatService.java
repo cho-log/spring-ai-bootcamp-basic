@@ -15,9 +15,7 @@ import com.cholog.bootcamp.dto.QuestionAskRequest;
 import com.cholog.bootcamp.dto.QuestionAskResponse;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -53,18 +51,6 @@ public class ChatService {
             .call()
             .chatResponse();
         Usage usage = chatResponse.getMetadata().getUsage();
-
-        log.info("""
-                request : {}
-                response : {}
-                promptTokens : {} completionTokens : {}, totalTokens : {}
-                """,
-            request.question(),
-            chatResponse.getResults().get(0).getOutput().getText(),
-            usage.getPromptTokens(),
-            usage.getCompletionTokens(),
-            usage.getTotalTokens()
-        );
 
         return QuestionAskResponse.from(
             chatResponse.getResult().getOutput().getText(),
