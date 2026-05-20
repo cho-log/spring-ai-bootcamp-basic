@@ -90,7 +90,7 @@ public class ChatService {
             """.formatted(
             toContext(searchDocuments(question, FAQ_TOP_K, "'layer1_faq'")),
             toContext(searchDocuments(question, CURRENT_POLICY_TOP_K, "'layer2_policies'")),
-            toContext(searchDocuments(question, INTERNAL_POLICY_TOP_K, "'layer2_internal")),
+            toContext(searchDocuments(question, INTERNAL_POLICY_TOP_K, "'layer2_internal'")),
             toContext(searchDocuments(question, CHAT_LOG_TOP_K, "'layer3_chatlogs'"))
         );
     }
