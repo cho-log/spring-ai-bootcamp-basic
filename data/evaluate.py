@@ -170,7 +170,7 @@ def main():
         if args.verbose:
             print(f"[{qid}] {marker} ({tier}) {question_ko[:40]}...")
             if score == 0:
-                print(f"        이유: {judgment.get('reason', '')[:80]}")
+                print(f"        이유: {judgment.get('reason', '')[:160]}")
 
         # 진행률 (10개마다)
         if not args.verbose and (i + 1) % 10 == 0:
