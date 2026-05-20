@@ -23,10 +23,12 @@ public class VectorStoreInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         List<Document> faqDocs = documentLoader.loadFaq();
         List<Document> policyDocs = documentLoader.loadPolicies();
+        //List<Document> chatlogDocs = documentLoader.loadChatlogs();
 
         List<Document> all = new ArrayList<>();
         all.addAll(faqDocs);
         all.addAll(policyDocs);
+        //all.addAll(chatlogDocs);
 
         if (all.isEmpty()) {
             log.warn("적재할 문서 없음. data/ 폴더 확인 필요");
@@ -34,7 +36,7 @@ public class VectorStoreInitializer implements ApplicationRunner {
         }
 
         vectorStore.add(all);
-        log.info("임베딩 완료: 총 {}개 (faq={}, policy={})",
-                all.size(), faqDocs.size(), policyDocs.size());
+        log.info("임베딩 완료: 총 {}개 (faq={}, policy={}, chatlog={})",
+                all.size(), faqDocs.size(), policyDocs.size(), 0);
     }
 }

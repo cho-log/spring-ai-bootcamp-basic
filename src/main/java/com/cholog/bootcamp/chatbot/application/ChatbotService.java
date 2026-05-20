@@ -49,7 +49,7 @@ public class ChatbotService {
                         .build()
         );
 
-        //loggingSearchedDocs(question, docs);
+        loggingSearchedDocs(question, docs);
 
         return docs.stream()
                 .map(Document::getText)
@@ -57,11 +57,11 @@ public class ChatbotService {
     }
 
     private static void loggingSearchedDocs(String question, List<Document> docs) {
-        log.debug("=== [RAG] 검색된 문서 ({}개) for: {} ===", docs.size(), question);
+        log.info("=== [RAG] 검색된 문서 ({}개) for: {} ===", docs.size(), question);
         for (int i = 0; i < docs.size(); i++) {
             Document doc = docs.get(i);
             String preview = doc.getText().substring(0, Math.min(120, doc.getText().length())).replace("\n", " ");
-            log.debug("[{}] metadata={} | text={}", i + 1, doc.getMetadata(), preview);
+            log.info("[{}] metadata={} | text={}", i + 1, doc.getMetadata(), preview);
         }
     }
 

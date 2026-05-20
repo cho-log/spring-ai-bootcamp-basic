@@ -1,28 +1,28 @@
 {
   "total": 150,
-  "correct": 110,
-  "incorrect": 40,
+  "correct": 108,
+  "incorrect": 42,
   "error": 0,
-  "accuracy": 0.7333333333333333,
+  "accuracy": 0.72,
   "tier_results": {
     "easy": {
-      "correct": 25,
+      "correct": 24,
       "total": 30
     },
     "medium": {
-      "correct": 66,
+      "correct": 62,
       "total": 94
     },
     "hard": {
-      "correct": 19,
+      "correct": 22,
       "total": 26
     }
   },
-  "elapsed_seconds": 40.24573802947998,
-  "avg_response_seconds": 2.556360289255778,
+  "elapsed_seconds": 50.64455032348633,
+  "avg_response_seconds": 3.2682551924387613,
   "chatbot_token_usage": {
-    "prompt_tokens": 177297,
-    "completion_tokens": 10421,
-    "total_tokens": 187718
+    "prompt_tokens": 177303,
+    "completion_tokens": 10457,
+    "total_tokens": 187760
   }
 }
