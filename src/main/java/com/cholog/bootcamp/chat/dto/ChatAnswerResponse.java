@@ -1,6 +1,6 @@
 package com.cholog.bootcamp.chat.dto;
 
-public record ChatResponse(
+public record ChatAnswerResponse(
     String answer,
     TokenUsage tokenUsage
 ) {

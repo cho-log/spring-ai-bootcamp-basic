@@ -1,6 +1,6 @@
 package com.cholog.bootcamp.chat;
 
-import com.cholog.bootcamp.chat.dto.ChatResponse;
+import com.cholog.bootcamp.chat.dto.ChatAnswerResponse;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.metadata.Usage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -29,7 +30,7 @@ public class ChatService {
         vectorStore.add(documentLoader.load());
     }
 
-    public ChatResponse ask(String question) {
+    public ChatAnswerResponse ask(String question) {
         List<Document> retrievedDocuments = vectorStore.similaritySearch(
             SearchRequest.builder()
                 .query(question)
@@ -44,7 +45,7 @@ public class ChatService {
             .map(Document::getText)
             .collect(Collectors.joining("\n\n===\n\n"));
 
-        org.springframework.ai.chat.model.ChatResponse response = chatClient.prompt()
+        ChatResponse response = chatClient.prompt()
             .system("""
                     - 당신은 Cholog Corporation의 고객 전용 챗봇 서비스이다.
                     - 제공된 컨텍스트만을 활용하라.
@@ -63,9 +64,9 @@ public class ChatService {
 
         Usage usage = response.getMetadata().getUsage();
 
-        return new ChatResponse(
+        return new ChatAnswerResponse(
             response.getResult().getOutput().getText(),
-            new ChatResponse.TokenUsage(
+            new ChatAnswerResponse.TokenUsage(
                 usage == null || usage.getPromptTokens() == null ? 0 : usage.getPromptTokens(),
                 usage == null || usage.getCompletionTokens() == null ? 0 : usage.getCompletionTokens(),
                 usage == null || usage.getTotalTokens() == null ? 0 : usage.getTotalTokens()
