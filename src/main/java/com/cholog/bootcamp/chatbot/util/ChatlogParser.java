@@ -63,6 +63,7 @@ public class ChatlogParser {
     }
 
     private void appendTags(StringBuilder sb, JsonNode node) {
+        sb.append("[예시 대화]\n");
         List<String> tags = new ArrayList<>();
         node.path("tags").forEach(tag -> tags.add(tag.asText()));
         if (!tags.isEmpty()) {

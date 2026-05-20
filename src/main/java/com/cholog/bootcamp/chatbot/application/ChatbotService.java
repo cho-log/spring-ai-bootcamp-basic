@@ -42,18 +42,26 @@ public class ChatbotService {
     }
 
     private String searchRelevantDocuments(String question) {
-        List<Document> docs = vectorStore.similaritySearch(
-                SearchRequest.builder()
-                        .query(question)
-                        .topK(8)
-                        .build()
-        );
+        List<Document> docs = new java.util.ArrayList<>();
+        docs.addAll(searchByLayer(question, "faq", 3));
+        docs.addAll(searchByLayer(question, "policy", 3));
+        docs.addAll(searchByLayer(question, "chatlog", 2));
 
         loggingSearchedDocs(question, docs);
 
         return docs.stream()
                 .map(Document::getText)
                 .collect(Collectors.joining("\n\n"));
+    }
+
+    private List<Document> searchByLayer(String question, String layer, int topK) {
+        return vectorStore.similaritySearch(
+                SearchRequest.builder()
+                        .query(question)
+                        .topK(topK)
+                        .filterExpression("layer == '" + layer + "'")
+                        .build()
+        );
     }
 
     private static void loggingSearchedDocs(String question, List<Document> docs) {
