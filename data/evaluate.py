@@ -2,7 +2,15 @@
 챗봇 품질 평가 스크립트
 
 실행 중인 서버(localhost:8080)에 테스트 질문을 보내고,
-LLM 판정으로 정확도를 측정합니다.
+LLM 판정으로 KPI 지표를 측정합니다.
+
+KPI 지표:
+  core_response  핵심 응답 성공  — 질문이 요구하는 정보에 직접 답변했는가
+  factuality     사실성          — 기대 답변과 모순되는 내용이 없는가
+  front_loaded   두괄식 응답     — 첫 문장에 직접 답변이 있는가
+  restraint      정보 절제력     — 부가 정보(논리 단위)가 1개 이하인가
+  conciseness    간결성          — 응답이 200자 이하인가 (Python 계산)
+  final_pass     최종 통과       — core_response × factuality
 
 사전 준비:
   python -m venv .venv
@@ -37,8 +45,8 @@ ROOT_DIR = DATA_DIR.parent
 
 SERVER_URL = "http://localhost:8080/api/chat"
 JUDGE_MODEL = "gpt-4o-mini"
+CONCISENESS_MAX_CHARS = 200
 
-# .env에서 API 키 로드
 env_path = ROOT_DIR / ".env"
 env_vars = dotenv_values(env_path)
 OPENAI_API_KEY = env_vars.get("OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
@@ -72,31 +80,38 @@ def ask_server(question: str) -> dict | None:
 # ─── LLM 판정 ─────────────────────────────────────────────────────────────────
 
 def judge_answer(question: str, expected: str, actual: str) -> dict:
-    """LLM으로 답변의 사실적 일치도를 판정합니다. usage 포함하여 반환."""
-    prompt = f"""당신은 FAQ 챗봇 답변의 품질을 평가하는 판정자입니다.
-제공된 [질문], [기대 답변], 그리고 챗봇의 [실제 답변]을 비교하여 [평가 기준]에 따라 정답 여부(정답:1/오답:0)를 판정하세요.
+    """LLM으로 4개 KPI 지표를 단일 호출로 판정합니다."""
+    prompt = f"""당신은 챗봇 답변 품질을 평가하는 판정자입니다.
 
-[]질문]: {question}
+[질문]: {question}
+[기대 답변]: {expected}
+[실제 답변]: {actual}
 
-[기대 답변 (정답)]: {expected}
+아래 4개 지표를 각각 판정하세요.
 
-[실제 답변 (챗봇)]: {actual}
+1. core_response — [질문]이 요구하는 정보에 실제 답변이 직접 응답했는가?
+  [질문]에서 사용자가 묻는 것(수치·기간·조건·방법 등)을 먼저 파악하세요.
+  [기대 답변]은 정답 팩트 확인 기준으로만 사용하세요.
+  1: 질문이 요구하는 정보에 직접 답변하며 [기대 답변]의 사실과 일치
+  0: 질문에 대한 답변 누락·오류, 또는 기대 답변이 있는데 거절한 경우
 
-[평가 기준]
-실제 답변이 기대 답변의 팩트와 사실적으로 일치하는지 아래 기준에 따라 평가하세요.
+2. factuality — 실제 답변 전체에 [기대 답변]과 모순되는 사실이 없는가?
+  1: [질문]에 대한 답변과 부가 정보 모두 [기대 답변]과 모순 없음
+  1: 거절 응답 (허위 정보 없음)
+  0: [기대 답변]의 사실과 충돌하는 내용 포함
 
-- 핵심 팩트 필수 일치 (1점): 실제 답변이 [질문]의 핵심에 대응하는 정확한 정답(수치나 내용)을 명확히 포함해야 합니다. 표현이 달라도 핵심 사실이 같다면 정답입니다.
-- 부가 정보의 선택적 허용: [기대 답변]에 적힌 주변 부가 정보(지급 시점, 사후 처리 등)를 실제 답변이 생략했더라도, 핵심 팩트가 맞다면 감점하지 마세요.
-- 감점 조항 (0점):
-  1. 질문에 대한 핵심 사실이 누락되었거나 틀린 경우.
-  2. 실제 답변이 부가 정보를 '선택적으로 제공'했으나, 그 내용이 [기대 답변]의 사실과 다를 경우.
-  3. 핵심 팩트 없이 부가 정보만 부분적으로 맞춘 경우.
+3. front_loaded — 첫 문장에 [질문]에 대한 직접 답변이 있는가?
+  1: 첫 문장에 질문이 요구하는 정보를 직접 전달
+  1: 거절 응답 (거절 의사가 첫 문장에 명확히 표현)
+  0: 서론·공감·확인 문구("안녕하세요", "좋은 질문이에요" 등)로 시작
 
+4. restraint — [질문]에 대한 직접 답변 외 부가 정보(논리 단위)가 1개 이하인가?
+  [질문]이 여러 항목을 묻는 경우, 각 항목의 답변은 직접 답변으로 간주 (부가 집계 제외)
+  1: 부가 정보 1개 이하
+  0: 부가 정보 2개 이상
 
-JSON으로만 응답하세요:
-{{"score": 1, "reason": "..."}}  (정답)
-{{"score": 0, "reason": "..."}}  (오답)
-"""
+JSON으로만 응답:
+{{"core_response":1,"factuality":1,"front_loaded":1,"restraint":1,"reasons":{{"core_response":"...","factuality":"...","front_loaded":"...","restraint":"..."}}}}"""
 
     resp = openai_client.chat.completions.create(
         model=JUDGE_MODEL,
@@ -109,7 +124,10 @@ JSON으로만 응답하세요:
     try:
         result = json.loads(resp.choices[0].message.content)
     except json.JSONDecodeError:
-        result = {"score": 0, "reason": "판정 파싱 실패"}
+        result = {
+            "core_response": 0, "factuality": 0, "front_loaded": 0, "restraint": 0,
+            "reasons": {k: "판정 파싱 실패" for k in ("core_response", "factuality", "front_loaded", "restraint")},
+        }
 
     result["judge_usage"] = {
         "prompt_tokens": usage.prompt_tokens,
@@ -138,15 +156,25 @@ def process_question(q: dict, idx: int) -> dict:
     token_usage = response.get("tokenUsage", {})
     judgment = judge_answer(question_ko, expected, actual_answer)
 
+    core_response = judgment.get("core_response", 0)
+    factuality = judgment.get("factuality", 0)
+
     return {
         "qid": qid,
         "tier": tier,
         "status": "ok",
-        "score": judgment.get("score", 0),
-        "reason": judgment.get("reason", ""),
         "question": question_ko,
         "token_usage": token_usage,
         "duration": time.time() - start,
+        "kpi": {
+            "core_response": core_response,
+            "factuality": factuality,
+            "front_loaded": judgment.get("front_loaded", 0),
+            "restraint": judgment.get("restraint", 0),
+            "conciseness": int(len(actual_answer) <= CONCISENESS_MAX_CHARS),
+            "final_pass": core_response * factuality,
+        },
+        "reasons": judgment.get("reasons", {}),
     }
 
 
@@ -180,46 +208,65 @@ def main():
         print(f"  ./gradlew bootRun")
         return
 
-    results = {"correct": 0, "incorrect": 0, "error": 0}
+    error_count = 0
+    kpi_totals = {k: 0 for k in ("core_response", "factuality", "front_loaded", "restraint", "conciseness", "final_pass")}
     tier_results = {}
     chatbot_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
     durations = []
     start_time = time.time()
+
+    def handle_result(r):
+        nonlocal error_count
+        _aggregate(r, kpi_totals, tier_results, chatbot_usage, durations, args.verbose)
+        if r["status"] == "error":
+            error_count += 1
 
     # ─── 실행 (순차 / 병렬 공통 집계) ────────────────────────────────────────
     if args.parallel > 1:
         with ThreadPoolExecutor(max_workers=args.parallel) as executor:
             futures = [executor.submit(process_question, q, i) for i, q in enumerate(questions)]
             for completed, fut in enumerate(as_completed(futures), 1):
-                r = fut.result()
-                _aggregate(r, results, tier_results, chatbot_usage, durations, args.verbose)
+                handle_result(fut.result())
                 if not args.verbose and completed % 10 == 0:
                     print(f"  진행: {completed}/{len(questions)}")
     else:
         for i, q in enumerate(questions):
-            r = process_question(q, i)
-            _aggregate(r, results, tier_results, chatbot_usage, durations, args.verbose)
+            handle_result(process_question(q, i))
             if not args.verbose and (i + 1) % 10 == 0:
                 print(f"  진행: {i+1}/{len(questions)}")
 
     # ─── 결과 출력 ────────────────────────────────────────────────────────────
     elapsed = time.time() - start_time
-    total = results["correct"] + results["incorrect"] + results["error"]
-    evaluated = total - results["error"]
+    total = len(questions)
+    evaluated = total - error_count
 
     print()
-    print(f"=== 평가 결과 ===")
-    print(f"전체: {results['correct']}/{total} ({results['correct']/max(total,1)*100:.1f}%)")
-    print()
+    print(f"=== KPI 결과 ({total}문항) ===")
+    kpi_labels = [
+        ("core_response", "핵심 응답 성공"),
+        ("factuality",    "사실성        "),
+        ("front_loaded",  "두괄식 응답   "),
+        ("restraint",     "정보 절제력   "),
+        ("conciseness",   f"간결성 ≤{CONCISENESS_MAX_CHARS}자  "),
+    ]
+    for key, label in kpi_labels:
+        n = kpi_totals[key]
+        pct = n / max(evaluated, 1) * 100
+        print(f"  {label}: {n:3d}/{evaluated} ({pct:.1f}%)")
+    print(f"  {'─' * 36}")
+    n = kpi_totals["final_pass"]
+    pct = n / max(evaluated, 1) * 100
+    print(f"  최종 통과 (정확성)  : {n:3d}/{evaluated} ({pct:.1f}%)")
 
-    print("난이도별:")
+    print()
+    print("난이도별 (최종 통과):")
     for tier in sorted(tier_results.keys()):
         t = tier_results[tier]
         pct = t["correct"] / max(t["total"], 1) * 100
         print(f"  {tier:8s}: {t['correct']:2d}/{t['total']:2d} ({pct:.0f}%)")
 
-    if results["error"] > 0:
-        print(f"\n  에러: {results['error']}건")
+    if error_count > 0:
+        print(f"\n  에러: {error_count}건")
 
     print(f"\n소요 시간: {elapsed:.1f}초")
     if durations:
@@ -234,10 +281,18 @@ def main():
     with open(result_file, "w") as f:
         json.dump({
             "total": total,
-            "correct": results["correct"],
-            "incorrect": results["incorrect"],
-            "error": results["error"],
-            "accuracy": results["correct"] / max(total, 1),
+            "correct": kpi_totals["final_pass"],
+            "incorrect": evaluated - kpi_totals["final_pass"],
+            "error": error_count,
+            "accuracy": round(kpi_totals["final_pass"] / max(evaluated, 1), 4),
+            "kpi": {
+                key: {
+                    "correct": kpi_totals[key],
+                    "total": evaluated,
+                    "rate": round(kpi_totals[key] / max(evaluated, 1), 4),
+                }
+                for key in ("core_response", "factuality", "front_loaded", "restraint", "conciseness", "final_pass")
+            },
             "tier_results": tier_results,
             "elapsed_seconds": elapsed,
             "avg_response_seconds": (sum(durations) / len(durations)) if durations else 0,
@@ -245,7 +300,8 @@ def main():
         }, f, indent=2, ensure_ascii=False)
     print(f"\n결과 저장: {result_file}")
 
-def _aggregate(r: dict, results: dict, tier_results: dict, chatbot_usage: dict,
+
+def _aggregate(r: dict, kpi_totals: dict, tier_results: dict, chatbot_usage: dict,
                durations: list, verbose: bool):
     """process_question 결과 1건을 집계합니다."""
     tier = r["tier"]
@@ -256,7 +312,6 @@ def _aggregate(r: dict, results: dict, tier_results: dict, chatbot_usage: dict,
     tier_results[tier]["total"] += 1
 
     if r["status"] == "error":
-        results["error"] += 1
         if verbose:
             print(f"[{r['qid']}] ERROR — 서버 응답 없음")
         return
@@ -266,19 +321,20 @@ def _aggregate(r: dict, results: dict, tier_results: dict, chatbot_usage: dict,
     chatbot_usage["completion_tokens"] += token_usage.get("completionTokens", 0)
     chatbot_usage["total_tokens"] += token_usage.get("totalTokens", 0)
 
-    score = r["score"]
-    if score == 1:
-        results["correct"] += 1
+    kpi = r["kpi"]
+    for key in kpi_totals:
+        kpi_totals[key] += kpi[key]
+
+    if kpi["final_pass"] == 1:
         tier_results[tier]["correct"] += 1
-        marker = "✓"
-    else:
-        results["incorrect"] += 1
-        marker = "✗"
 
     if verbose:
+        marker = "✓" if kpi["final_pass"] == 1 else "✗"
         print(f"[{r['qid']}] {marker} ({tier}) {r['question'][:40]}...")
-        if score == 0:
-            print(f"        이유: {r['reason'][:80]}")
+        if kpi["final_pass"] == 0:
+            for k, v in r.get("reasons", {}).items():
+                if kpi.get(k, 1) == 0:
+                    print(f"        [{k}=0] {str(v)[:80]}")
 
 
 if __name__ == "__main__":
