@@ -102,6 +102,20 @@ JSON으로만 응답하세요:
         return {"score": 0, "reason": "판정 파싱 실패"}
 
 
+def next_result_file_path(data_dir: Path) -> Path:
+    """기존 결과 파일이 있으면 번호를 붙여 새 파일명을 반환합니다."""
+    default_path = data_dir / "eval_result.json"
+    if not default_path.exists():
+        return default_path
+
+    index = 1
+    while True:
+        candidate = data_dir / f"eval_result_{index}.json"
+        if not candidate.exists():
+            return candidate
+        index += 1
+
+
 # ─── 메인 ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -133,6 +147,7 @@ def main():
 
     results = {"correct": 0, "incorrect": 0, "error": 0}
     tier_results = {}
+    detailed_results = []
     start_time = time.time()
 
     for i, q in enumerate(questions):
@@ -149,6 +164,16 @@ def main():
         response = ask_server(question_ko)
         if response is None:
             results["error"] += 1
+            detailed_results.append({
+                "id": qid,
+                "tier": tier,
+                "question": question_ko,
+                "expected_answer": expected,
+                "actual_answer": "",
+                "score": 0,
+                "reason": "서버 응답 없음",
+                "status": "error",
+            })
             if args.verbose:
                 print(f"[{qid}] ERROR — 서버 응답 없음")
             continue
@@ -166,6 +191,17 @@ def main():
         else:
             results["incorrect"] += 1
             marker = "✗"
+
+        detailed_results.append({
+            "id": qid,
+            "tier": tier,
+            "question": question_ko,
+            "expected_answer": expected,
+            "actual_answer": actual_answer,
+            "score": score,
+            "reason": judgment.get("reason", ""),
+            "status": "correct" if score == 1 else "incorrect",
+        })
 
         if args.verbose:
             print(f"[{qid}] {marker} ({tier}) {question_ko[:40]}...")
@@ -197,8 +233,17 @@ def main():
     print(f"\n소요 시간: {elapsed:.1f}초")
     print(f"평균 응답: {elapsed/max(total,1):.1f}초/질문")
 
+    incorrect_results = [item for item in detailed_results if item["status"] == "incorrect"]
+    if incorrect_results:
+        print("\n오답 판정 이유:")
+        for item in incorrect_results[:10]:
+            print(f"  [{item['id']}] {item['question']}")
+            print(f"    이유: {item['reason']}")
+        if len(incorrect_results) > 10:
+            print(f"  ... 외 {len(incorrect_results) - 10}건은 결과 파일을 확인하세요.")
+
     # 결과 저장
-    result_file = DATA_DIR / "eval_result.json"
+    result_file = next_result_file_path(DATA_DIR)
     with open(result_file, "w") as f:
         json.dump({
             "total": total,
@@ -208,6 +253,7 @@ def main():
             "accuracy": results["correct"] / max(total, 1),
             "tier_results": tier_results,
             "elapsed_seconds": elapsed,
+            "detailed_results": detailed_results,
         }, f, indent=2, ensure_ascii=False)
     print(f"\n결과 저장: {result_file}")
 

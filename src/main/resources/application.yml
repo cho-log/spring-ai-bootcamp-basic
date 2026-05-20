@@ -11,3 +11,9 @@ spring:
       embedding:
         options:
           model: text-embedding-3-small
+
+app:
+  rag:
+    top-k: 5
+    faq-split-regex: "(?m)^### "
+    policy-split-regex: "(?m)^## "
