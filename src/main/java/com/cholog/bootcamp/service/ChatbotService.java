@@ -40,24 +40,13 @@ public class ChatbotService {
     }
 
     public ChatbotResponse chat(ChatbotRequest request) {
+        // 검색
         SearchRequest searchRequest = getSearchRequest(request.question(), 4);
         List<Document> documents = vectorStore.similaritySearch(searchRequest);
-        documents = documents.stream()
-            .map(document -> document.getMetadata().get("filename").toString())
-            .distinct()
-            .map(filename -> {
-                try {
-                    return resolver.getResources("classpath:data/**/" + filename)[0];
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .map(TextReader::new)
-            .flatMap(reader -> reader.get().stream())
-            .toList();
 
+        // 증강 & 생성
+        documents = getFullDocuments(documents);
         String context = getContext(documents);
-        System.out.println(context);
         ChatResponse chatResponse = chatClient.prompt()
             .system("""
                 당신은 초록 고객센터의 챗봇입니다.
@@ -86,11 +75,26 @@ public class ChatbotService {
         return ChatbotResponse.from(answer, usage);
     }
 
+    private List<Document> getFullDocuments(List<Document> documents) {
+        return documents.stream()
+            .map(document -> document.getMetadata().get("filename").toString())
+            .distinct()
+            .map(filename -> {
+                try {
+                    return resolver.getResources("classpath:data/**/" + filename)[0];
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .map(TextReader::new)
+            .flatMap(reader -> reader.get().stream())
+            .toList();
+    }
+
     private static String getContext(List<Document> documents) {
-        String context = documents.stream()
+        return documents.stream()
             .map(Document::getText)
             .collect(Collectors.joining("\n\n"));
-        return context;
     }
 
     private SearchRequest getSearchRequest(String query, int k) {
