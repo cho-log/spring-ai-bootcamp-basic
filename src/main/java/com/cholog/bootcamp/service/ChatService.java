@@ -3,6 +3,8 @@ package com.cholog.bootcamp.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.print.Doc;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -74,8 +76,6 @@ public class ChatService {
     }
 
     private String getContext(String question) {
-        SearchResult searchResult = searchDocuments(question);
-
         return """
             FAQ
             %s
@@ -89,32 +89,15 @@ public class ChatService {
             Chat Logs
             %s
             """.formatted(
-            toContext(searchResult.faqDocuments()),
-            toContext(searchResult.currentPolicyDocuments()),
-            toContext(searchResult.internalPolicyDocuments()),
-            toContext(searchResult.chatLogDocuments())
+            toContext(searchDocuments(question, FAQ_TOP_K, "'layer1_faq'")),
+            toContext(searchDocuments(question, CURRENT_POLICY_TOP_K, "'layer2_policies'")),
+            toContext(searchDocuments(question, INTERNAL_POLICY_TOP_K, "'layer2_internal")),
+            toContext(searchDocuments(question, CHAT_LOG_TOP_K, "'layer3_chatlogs'"))
         );
     }
 
-    private SearchResult searchDocuments(String question) {
-        List<Document> faqDocuments = search(question, FAQ_TOP_K, "layer == 'layer1_faq'");
-        List<Document> currentPolicyDocuments = search(
-            question,
-            CURRENT_POLICY_TOP_K,
-            "layer == 'layer2_policies' && policy_scope == 'current'"
-        );
-        List<Document> internalPolicyDocuments = search(
-            question,
-            INTERNAL_POLICY_TOP_K,
-            "layer == 'layer2_policies' && policy_scope == 'internal'"
-        );
-        List<Document> chatLogDocuments = search(
-            question,
-            CHAT_LOG_TOP_K,
-            "layer == 'layer3_chatlogs' && agent_accuracy == 'correct'"
-        );
-
-        return new SearchResult(faqDocuments, currentPolicyDocuments, internalPolicyDocuments, chatLogDocuments);
+    private List<Document> searchDocuments(String question, int topK, String layer) {
+        return search(question, topK, "layer == " + layer);
     }
 
     private List<Document> search(String question, int topK, String filterExpression) {
@@ -131,13 +114,5 @@ public class ChatService {
         return documents.stream()
             .map(Document::getText)
             .collect(Collectors.joining("\n\n"));
-    }
-
-    private record SearchResult(
-        List<Document> faqDocuments,
-        List<Document> currentPolicyDocuments,
-        List<Document> internalPolicyDocuments,
-        List<Document> chatLogDocuments
-    ) {
     }
 }
