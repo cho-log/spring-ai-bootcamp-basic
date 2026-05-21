@@ -25,7 +25,7 @@ public class CurrentPolicyReader {
                 .forEach(path -> documents.addAll(readFile(path)));
             return documents;
         } catch (IOException e) {
-            throw new IllegalArgumentException("");
+            throw new RuntimeException("정책 디렉토리를 읽는 중 오류가 발생했습니다.", e);
         }
     }
 
