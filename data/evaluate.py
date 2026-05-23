@@ -5,12 +5,15 @@
 LLM 판정으로 KPI 지표를 측정합니다.
 
 KPI 지표:
-  core_response  핵심 응답 성공  — 질문이 요구하는 정보에 직접 답변했는가
-  factuality     사실성          — 기대 답변과 모순되는 내용이 없는가
-  front_loaded   두괄식 응답     — 첫 문장에 직접 답변이 있는가
-  restraint      정보 절제력     — 부가 정보(논리 단위)가 1개 이하인가
-  conciseness    간결성          — 응답이 200자 이하인가 (Python 계산)
-  final_pass     최종 통과       — core_response × factuality
+  refusal_quality 거절 품질       — 거절이 필요한 상황에서 적절히 거절했는가 (0/1/2)
+  core_response   핵심 응답 성공   — 질문이 요구하는 정보에 직접 답변했는가 (0/1/2)
+  factuality      사실성           — 기대 답변과 모순되는 내용이 없는가 (0/1/2)
+  front_loaded    두괄식 응답      — 첫 문장에 직접 답변이 있는가 (0/1)
+  restraint       정보 절제력      — 부가 정보(논리 단위)가 1개 이하인가 (0/1)
+  conciseness     간결성           — 응답이 200자 이하인가 (Python 계산, 0/1)
+  final_pass      최종 통과        — refusal_quality=1 → 통과
+                                     refusal_quality=0 → 탈락
+                                     refusal_quality=2 → core_response + factuality == 4
 
 사전 준비:
   python -m venv .venv
@@ -80,38 +83,77 @@ def ask_server(question: str) -> dict | None:
 # ─── LLM 판정 ─────────────────────────────────────────────────────────────────
 
 def judge_answer(question: str, expected: str, actual: str) -> dict:
-    """LLM으로 4개 KPI 지표를 단일 호출로 판정합니다."""
+    """LLM으로 KPI 지표를 단일 호출로 판정합니다."""
     prompt = f"""당신은 챗봇 답변 품질을 평가하는 판정자입니다.
 
 [질문]: {question}
 [기대 답변]: {expected}
 [실제 답변]: {actual}
 
-아래 4개 지표를 각각 판정하세요.
+아래 5개 지표를 각각 독립적으로 판정하세요.
 
-1. core_response — [질문]이 요구하는 정보에 실제 답변이 직접 응답했는가?
-  [질문]에서 사용자가 묻는 것(수치·기간·조건·방법 등)을 먼저 파악하세요.
-  [기대 답변]은 정답 팩트 확인 기준으로만 사용하세요.
-  1: 질문이 요구하는 정보에 직접 답변하며 [기대 답변]의 사실과 일치
-  0: 질문에 대한 답변 누락·오류, 또는 기대 답변이 있는데 거절한 경우
+1. refusal_quality — 거절 여부와 적절성
+  2: 거절 없음 (정상 답변)
+  1: [기대 답변]이 비어 있거나 내용이 정보 없음 이고 [실제 답변]도 적절히 거절
+  0: [기대 답변]에 답변 내용이 있는데 [실제 답변]이 거절
 
-2. factuality — 실제 답변 전체에 [기대 답변]과 모순되는 사실이 없는가?
-  1: [질문]에 대한 답변과 부가 정보 모두 [기대 답변]과 모순 없음
-  1: 거절 응답 (허위 정보 없음)
-  0: [기대 답변]의 사실과 충돌하는 내용 포함
+2. core_response — 질문이 요구하는 정보에 직접 답했는가?
+  2: 질문의 핵심 정보에 완전히 답변하며 [기대 답변] 사실과 일치
+     - 질문이 수치를 묻는 경우 정확한 수치를 답변
+       (예: "반품 기간이 며칠이에요?" → "14일입니다"라고 답변)
+     - 질문이 조건을 묻는 경우 조건과 적용 대상을 정확히 답변
+       (예: "VIP도 배송비 내야 해요?" → "VIP는 무료입니다"라고 답변)
+     - 질문이 방법을 묻는 경우 구체적인 절차를 답변
+       (예: "반품 어떻게 해요?" → 반품 신청 경로와 절차를 답변)
+  1: 질문에 답변했으나 핵심 정보 일부 누락
+     - 수치는 맞으나 적용 조건을 빠뜨림
+       (예: "언제 환불돼요?" → "3~5일 걸립니다"라고만 답변, 결제수단별 차이 미언급)
+     - 방법은 맞으나 핵심 단계 일부 누락
+       (예: 반품 절차 안내 시 사진 첨부 단계 누락)
+  0: 아래 중 하나에 해당
+     - 질문이 요구하는 정보를 전혀 제공하지 않음
+     - 질문과 무관한 내용만 답변
+     - "고객센터에 문의하세요"처럼 답변을 회피
 
-3. front_loaded — 첫 문장에 [질문]에 대한 직접 답변이 있는가?
+
+3. factuality — 실제 답변이 [기대 답변]과 모순되는 내용이 없는가?
+  수치뿐 아니라 조건·논리·인과관계도 포함하여 검토하세요.
+
+  2: 답변 내 모든 내용이 기대 답변과 일치
+     - 수치·기간이 정확히 같음
+       (예: 반품 기간 14일 → "14일"이라고 답변)
+     - 조건과 적용 대상이 정확히 같음
+       (예: "VIP만 무료" → "VIP만 무료"라고 답변)
+     - 인과관계가 정확히 같음 — 원인과 결과를 모두 포함
+       (예: "반품하면 포인트 차감" → "반품 시 포인트가 차감됩니다"라고 답변)
+       ※ 결과만 언급하고 원인 조건을 빠뜨리면 1점
+  1: 핵심 사실은 맞으나 아래 중 하나에 해당
+     - 기대 답변에 있는 부가 조건을 언급하지 않음
+       (예: "14일 이내 반품 가능" → "반품 가능"하다고만 답변, 기간 미언급)
+     - 인과관계에서 원인 조건을 빠뜨리고 결과만 언급
+       (예: "반품하면 포인트 차감" → "포인트가 차감됩니다"라고만 답변)
+  0: 아래 중 하나에 해당
+     - 수치·기간이 기대 답변과 다름
+       (예: 반품 기간 14일 → "7일"이라고 답변)
+     - 조건·적용 대상이 반전됨
+       (예: "VIP만 무료" → "모든 회원 무료"라고 답변)
+     - 인과관계가 반전됨
+       (예: "반품하면 등급 하락" → "등급에 영향 없다"고 답변)
+     - 기대 답변에 없는 구체적 수치·정책을 만들어서 답변
+
+
+4. front_loaded — 첫 문장에 [질문]에 대한 직접 답변이 있는가?
   1: 첫 문장에 질문이 요구하는 정보를 직접 전달
   1: 거절 응답 (거절 의사가 첫 문장에 명확히 표현)
   0: 서론·공감·확인 문구("안녕하세요", "좋은 질문이에요" 등)로 시작
 
-4. restraint — [질문]에 대한 직접 답변 외 부가 정보(논리 단위)가 1개 이하인가?
+5. restraint — [질문]에 대한 직접 답변 외 부가 정보가 1개 이하인가?
   [질문]이 여러 항목을 묻는 경우, 각 항목의 답변은 직접 답변으로 간주 (부가 집계 제외)
   1: 부가 정보 1개 이하
   0: 부가 정보 2개 이상
 
 JSON으로만 응답:
-{{"core_response":1,"factuality":1,"front_loaded":1,"restraint":1,"reasons":{{"core_response":"...","factuality":"...","front_loaded":"...","restraint":"..."}}}}"""
+{{"refusal_quality":2,"core_response":2,"factuality":2,"front_loaded":1,"restraint":1,"reasons":{{"refusal_quality":"...","core_response":"...","factuality":"...","front_loaded":"...","restraint":"..."}}}}"""
 
     resp = openai_client.chat.completions.create(
         model=JUDGE_MODEL,
@@ -125,8 +167,10 @@ JSON으로만 응답:
         result = json.loads(resp.choices[0].message.content)
     except json.JSONDecodeError:
         result = {
-            "core_response": 0, "factuality": 0, "front_loaded": 0, "restraint": 0,
-            "reasons": {k: "판정 파싱 실패" for k in ("core_response", "factuality", "front_loaded", "restraint")},
+            "refusal_quality": 0, "core_response": 0, "factuality": 0,
+            "front_loaded": 0, "restraint": 0,
+            "reasons": {k: "판정 파싱 실패" for k in
+                        ("refusal_quality", "core_response", "factuality", "front_loaded", "restraint")},
         }
 
     result["judge_usage"] = {
@@ -156,8 +200,16 @@ def process_question(q: dict, idx: int) -> dict:
     token_usage = response.get("tokenUsage", {})
     judgment = judge_answer(question_ko, expected, actual_answer)
 
-    core_response = judgment.get("core_response", 0)
-    factuality = judgment.get("factuality", 0)
+    refusal_quality = judgment.get("refusal_quality", 0)
+    core_response   = judgment.get("core_response", 0)
+    factuality      = judgment.get("factuality", 0)
+
+    if refusal_quality == 1:
+        final_pass = 1
+    elif refusal_quality == 0:
+        final_pass = 0
+    else:  # refusal_quality == 2 (정상 답변)
+        final_pass = int(core_response + factuality == 4)
 
     return {
         "qid": qid,
@@ -167,12 +219,13 @@ def process_question(q: dict, idx: int) -> dict:
         "token_usage": token_usage,
         "duration": time.time() - start,
         "kpi": {
-            "core_response": core_response,
-            "factuality": factuality,
-            "front_loaded": judgment.get("front_loaded", 0),
-            "restraint": judgment.get("restraint", 0),
-            "conciseness": int(len(actual_answer) <= CONCISENESS_MAX_CHARS),
-            "final_pass": core_response * factuality,
+            "refusal_quality": refusal_quality,
+            "core_response":   core_response,
+            "factuality":      factuality,
+            "front_loaded":    judgment.get("front_loaded", 0),
+            "restraint":       judgment.get("restraint", 0),
+            "conciseness":     int(len(actual_answer) <= CONCISENESS_MAX_CHARS),
+            "final_pass":      final_pass,
         },
         "reasons": judgment.get("reasons", {}),
     }
@@ -209,7 +262,15 @@ def main():
         return
 
     error_count = 0
-    kpi_totals = {k: 0 for k in ("core_response", "factuality", "front_loaded", "restraint", "conciseness", "final_pass")}
+    kpi_totals = {
+        "refusal_quality": {"score_0": 0, "score_1": 0, "score_2": 0},
+        "core_response":   {"score_0": 0, "score_1": 0, "score_2": 0},
+        "factuality":      {"score_0": 0, "score_1": 0, "score_2": 0},
+        "front_loaded":    {"score_0": 0, "score_1": 0},
+        "restraint":       {"score_0": 0, "score_1": 0},
+        "conciseness":     {"score_0": 0, "score_1": 0},
+        "final_pass":      {"score_0": 0, "score_1": 0},
+    }
     tier_results = {}
     chatbot_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
     durations = []
@@ -240,30 +301,39 @@ def main():
     total = len(questions)
     evaluated = total - error_count
 
+    def pct(n): return n / max(evaluated, 1) * 100
+
     print()
     print(f"=== KPI 결과 ({total}문항) ===")
-    kpi_labels = [
-        ("core_response", "핵심 응답 성공"),
-        ("factuality",    "사실성        "),
-        ("front_loaded",  "두괄식 응답   "),
-        ("restraint",     "정보 절제력   "),
-        ("conciseness",   f"간결성 ≤{CONCISENESS_MAX_CHARS}자  "),
-    ]
-    for key, label in kpi_labels:
-        n = kpi_totals[key]
-        pct = n / max(evaluated, 1) * 100
-        print(f"  {label}: {n:3d}/{evaluated} ({pct:.1f}%)")
+
+    # 0/1/2 지표: 분포 출력
+    for key, label in [
+        ("refusal_quality", "거절 품질      "),
+        ("core_response",   "핵심 응답 성공  "),
+        ("factuality",      "사실성          "),
+    ]:
+        t = kpi_totals[key]
+        print(f"  {label}: 완전 {t['score_2']}({pct(t['score_2']):.0f}%) | 부분 {t['score_1']}({pct(t['score_1']):.0f}%) | 실패 {t['score_0']}({pct(t['score_0']):.0f}%)")
+
+    # 0/1 지표: 통과/실패 출력
+    for key, label in [
+        ("front_loaded", "두괄식 응답     "),
+        ("restraint",    "정보 절제력     "),
+        ("conciseness",  f"간결성 ≤{CONCISENESS_MAX_CHARS}자   "),
+    ]:
+        t = kpi_totals[key]
+        print(f"  {label}: 통과 {t['score_1']}({pct(t['score_1']):.1f}%) | 실패 {t['score_0']}({pct(t['score_0']):.1f}%)")
+
     print(f"  {'─' * 36}")
-    n = kpi_totals["final_pass"]
-    pct = n / max(evaluated, 1) * 100
-    print(f"  최종 통과 (정확성)  : {n:3d}/{evaluated} ({pct:.1f}%)")
+    fp = kpi_totals["final_pass"]
+    print(f"  최종 통과 (정확성)  : {fp['score_1']:3d}/{evaluated} ({pct(fp['score_1']):.1f}%)")
 
     print()
     print("난이도별 (최종 통과):")
     for tier in sorted(tier_results.keys()):
         t = tier_results[tier]
-        pct = t["correct"] / max(t["total"], 1) * 100
-        print(f"  {tier:8s}: {t['correct']:2d}/{t['total']:2d} ({pct:.0f}%)")
+        p = t["correct"] / max(t["total"], 1) * 100
+        print(f"  {tier:8s}: {t['correct']:2d}/{t['total']:2d} ({p:.0f}%)")
 
     if error_count > 0:
         print(f"\n  에러: {error_count}건")
@@ -281,17 +351,13 @@ def main():
     with open(result_file, "w") as f:
         json.dump({
             "total": total,
-            "correct": kpi_totals["final_pass"],
-            "incorrect": evaluated - kpi_totals["final_pass"],
+            "correct": kpi_totals["final_pass"]["score_1"],
+            "incorrect": evaluated - kpi_totals["final_pass"]["score_1"],
             "error": error_count,
-            "accuracy": round(kpi_totals["final_pass"] / max(evaluated, 1), 4),
+            "accuracy": round(kpi_totals["final_pass"]["score_1"] / max(evaluated, 1), 4),
             "kpi": {
-                key: {
-                    "correct": kpi_totals[key],
-                    "total": evaluated,
-                    "rate": round(kpi_totals[key] / max(evaluated, 1), 4),
-                }
-                for key in ("core_response", "factuality", "front_loaded", "restraint", "conciseness", "final_pass")
+                key: {**kpi_totals[key], "total": evaluated}
+                for key in kpi_totals
             },
             "tier_results": tier_results,
             "elapsed_seconds": elapsed,
@@ -323,7 +389,8 @@ def _aggregate(r: dict, kpi_totals: dict, tier_results: dict, chatbot_usage: dic
 
     kpi = r["kpi"]
     for key in kpi_totals:
-        kpi_totals[key] += kpi[key]
+        score = kpi[key]
+        kpi_totals[key][f"score_{score}"] += 1
 
     if kpi["final_pass"] == 1:
         tier_results[tier]["correct"] += 1
@@ -333,7 +400,7 @@ def _aggregate(r: dict, kpi_totals: dict, tier_results: dict, chatbot_usage: dic
         print(f"[{r['qid']}] {marker} ({tier}) {r['question'][:40]}...")
         if kpi["final_pass"] == 0:
             for k, v in r.get("reasons", {}).items():
-                if kpi.get(k, 1) == 0:
+                if kpi.get(k, 2) == 0:
                     print(f"        [{k}=0] {str(v)[:80]}")
 
 
