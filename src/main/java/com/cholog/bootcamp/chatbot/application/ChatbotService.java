@@ -19,6 +19,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatbotService {
 
+    private static final int FAQ_TOP_K = 4;
+    private static final int POLICY_TOP_K = 4;
+    private static final int CHATLOG_TOP_K = 3;
     private static final String PROMPT = """
             [참고 문서]
             %s
@@ -43,9 +46,9 @@ public class ChatbotService {
 
     private String searchRelevantDocuments(String question) {
         List<Document> docs = new java.util.ArrayList<>();
-        docs.addAll(searchByLayer(question, "faq", 3));
-        docs.addAll(searchByLayer(question, "policy", 3));
-        docs.addAll(searchByLayer(question, "chatlog", 2));
+        docs.addAll(searchByLayer(question, "faq", FAQ_TOP_K));
+        docs.addAll(searchByLayer(question, "policy", POLICY_TOP_K));
+        docs.addAll(searchByLayer(question, "chatlog", CHATLOG_TOP_K));
 
         loggingSearchedDocs(question, docs);
 
