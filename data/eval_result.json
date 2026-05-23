@@ -6,21 +6,21 @@
   "accuracy": 0.9333,
   "kpi": {
     "refusal_quality": {
-      "score_0": 3,
+      "score_0": 4,
       "score_1": 0,
-      "score_2": 147,
+      "score_2": 146,
       "total": 150
     },
     "core_response": {
-      "score_0": 7,
-      "score_1": 0,
-      "score_2": 143,
+      "score_0": 6,
+      "score_1": 2,
+      "score_2": 142,
       "total": 150
     },
     "factuality": {
-      "score_0": 4,
+      "score_0": 2,
       "score_1": 5,
-      "score_2": 141,
+      "score_2": 143,
       "total": 150
     },
     "front_loaded": {
@@ -29,13 +29,13 @@
       "total": 150
     },
     "restraint": {
-      "score_0": 5,
-      "score_1": 145,
+      "score_0": 4,
+      "score_1": 146,
       "total": 150
     },
     "conciseness": {
-      "score_0": 0,
-      "score_1": 150,
+      "score_0": 1,
+      "score_1": 149,
       "total": 150
     },
     "final_pass": {
@@ -46,23 +46,23 @@
   },
   "tier_results": {
     "easy": {
-      "correct": 28,
+      "correct": 29,
       "total": 30
     },
     "medium": {
-      "correct": 89,
+      "correct": 87,
       "total": 94
     },
     "hard": {
-      "correct": 23,
+      "correct": 24,
       "total": 26
     }
   },
-  "elapsed_seconds": 70.95889401435852,
-  "avg_response_seconds": 4.597711205482483,
+  "elapsed_seconds": 70.1703679561615,
+  "avg_response_seconds": 4.527638580004374,
   "chatbot_token_usage": {
     "prompt_tokens": 278086,
-    "completion_tokens": 6881,
-    "total_tokens": 284967
+    "completion_tokens": 7064,
+    "total_tokens": 285150
   }
 }
