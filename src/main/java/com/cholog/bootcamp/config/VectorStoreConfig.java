@@ -3,7 +3,8 @@ package com.cholog.bootcamp.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.transformer.splitter.TokenTextSplitter;
+import org.springframework.ai.reader.markdown.MarkdownDocumentReader;
+import org.springframework.ai.reader.markdown.config.MarkdownDocumentReaderConfig;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,10 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -30,41 +28,42 @@ public class VectorStoreConfig {
         var store = SimpleVectorStore.builder(model).build();
 
         var documents = new ArrayList<Document>();
-        documents.addAll(toDocuments(faqResources, "faq"));
-        documents.addAll(toDocuments(policyResources, "policy"));
-        documents.addAll(toDocuments(exampleResources, "example"));
+        documents.addAll(toMarkdownDocuments(faqResources, "faq"));
+        documents.addAll(toMarkdownDocuments(policyResources, "policy"));
+        documents.addAll(toMarkdownDocuments(exampleResources, "example"));
 
-
-        TokenTextSplitter splitter = TokenTextSplitter.builder()
-                .withChunkSize(400)
-                .withMinChunkSizeChars(200)
-                .withMaxNumChunks(10000)
-                .withKeepSeparator(true)
-                .build();
-        var chunks = splitter.apply(documents);
-        chunks.forEach(chunk -> {
-            if (chunk.getText() != null) {
-                log.info("chunk ID: {}, TEXT: {}", chunk.getId(),
-                        chunk.getText().substring(0, Math.min(80, chunk.getText().length())).replace("\n", " "));
+        documents.forEach(document -> {
+            if (document.getText() != null) {
+                log.info("document ID: {}, file: {}, metadata: {}, TEXT: {}",
+                        document.getId(),
+                        document.getMetadata().get("source"),
+                        document.getMetadata(),
+                        document.getText().substring(0, Math.min(80, document.getText().length())).replace("\n", " "));
             }
         });
 
-        store.add(chunks);
-        log.info("vector store 적재 완료. 원본 {} -> 청크 {}", documents.size(), chunks.size());
+        store.add(documents);
+        log.info("vector store 적재 완료. markdown 문서 {}", documents.size());
         return store;
     }
 
-    private List<Document> toDocuments(Resource[] resources, String layer) {
-        return Arrays.stream(resources)
-                .map(r -> {
-                    try {
-                        return new Document(
-                                r.getContentAsString(StandardCharsets.UTF_8),
-                                Map.of("source", r.getFilename(), "layer", layer));
-                    } catch (IOException e) {
-                        throw new IllegalStateException("리소스 로드 실패: " + r.getFilename(), e);
-                    }
-                })
-                .toList();
+    private List<Document> toMarkdownDocuments(Resource[] resources, String layer) {
+        var documents = new ArrayList<Document>();
+
+        for (Resource resource : resources) {
+            var config = MarkdownDocumentReaderConfig.builder()
+                    .withIncludeCodeBlock(false)
+                    .withIncludeBlockquote(false)
+                    .withHorizontalRuleCreateDocument(true)
+                    .withAdditionalMetadata(Map.of(
+                            "source", resource.getFilename(),
+                            "layer", layer
+                    ))
+                    .build();
+
+            documents.addAll(new MarkdownDocumentReader(resource, config).get());
+        }
+
+        return documents;
     }
 }
