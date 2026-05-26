@@ -24,31 +24,6 @@ public class FrequentlyQuestionChatApiService {
     private final PricingCalculator pricingCalculator;
     private final VectorStore vectorStore;
 
-    public FrequentlyQuestionChatResponseDto chat(FrequentlyQuestionChatRequestDto requestDto) {
-        var prompt = Prompt.builder()
-                .content(requestDto.question())
-                .build();
-
-        var response = chatClient.prompt(prompt)
-                .call()
-                .chatResponse();
-
-        if (response == null) {
-            return new FrequentlyQuestionChatResponseDto(
-                    "응답이 없습니다.", TokenUsage.EMPTY
-            );
-        }
-
-        var generation = response.getResult().getOutput();
-        var metadata = response.getMetadata();
-
-        var usage = TokenUsage.from(metadata.getUsage());
-        var price = calculateModelPrice(metadata.getModel(), usage);
-
-        log.info("[{}] 토큰 사용량: {}, 토큰 비용: {}$\n결과: {}", metadata.getModel(), usage, price, generation.getText());
-        return new FrequentlyQuestionChatResponseDto(generation.getText(), usage);
-    }
-
     public FrequentlyQuestionChatResponseDto chatWithRag(FrequentlyQuestionChatRequestDto requestDto) {
 
         String question = requestDto.question();

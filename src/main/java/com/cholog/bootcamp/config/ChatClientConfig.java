@@ -35,15 +35,9 @@ public class ChatClientConfig {
 
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder,
-                                 @Value("classpath:prompts/faq-system.st") Resource systemTemplateResource,
-                                 @Value("classpath:layer1_faq/*.md") Resource[] faqResources,
-                                 @Value("classpath:layer2_policies/current/*.md") Resource[] policyResources,
-                                 @Value("classpath:layer3_examples/*.md") Resource[] exampleResources) {
+                                 @Value("classpath:prompts/faq-system.st") Resource systemTemplateResource) {
 
         var systemTemplate = loadSystemTemplate(systemTemplateResource);
-        var faq = concatResources(faqResources, "faq");
-        var policies = concatResources(policyResources, "policies");
-        var examples = concatResources(exampleResources, "examples");
 
         return builder
                 .defaultSystem(spec -> spec
@@ -58,25 +52,6 @@ public class ChatClientConfig {
             return content;
         } catch (Exception e) {
             log.warn("faq 시스템 프롬프트 로드중 문제가 발생했습니다.", e);
-            return "";
-        }
-    }
-
-    private String concatResources(Resource[] resources, String label) {
-        try {
-            log.info("{} layer 파일을 로드합니다. 개수: {}", label, resources.length);
-
-            var sb = new StringBuilder();
-            for (Resource r : resources) {
-                sb.append("## ").append(r.getFilename()).append(System.lineSeparator());
-                sb.append(r.getContentAsString(StandardCharsets.UTF_8));
-                sb.append(System.lineSeparator()).append(System.lineSeparator());
-                sb.append("---");
-                sb.append(System.lineSeparator()).append(System.lineSeparator());
-            }
-            return sb.toString();
-        } catch (Exception e) {
-            log.warn("{} layer 로드중 문제가 발생했습니다.", label, e);
             return "";
         }
     }
