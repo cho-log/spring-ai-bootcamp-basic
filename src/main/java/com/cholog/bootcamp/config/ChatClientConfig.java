@@ -35,7 +35,7 @@ public class ChatClientConfig {
 
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder,
-                                 @Value("classpath:prompts/faq-system.st") Resource systemTemplateResource) {
+                                 @Value("${app.chat.system-prompt}") Resource systemTemplateResource) {
 
         var systemTemplate = loadSystemTemplate(systemTemplateResource);
 
@@ -48,7 +48,7 @@ public class ChatClientConfig {
     private String loadSystemTemplate(Resource systemTemplate) {
         try {
             String content = systemTemplate.getContentAsString(StandardCharsets.UTF_8);
-            log.info("faq 시스템 프롬프트를 로드합니다. 길이: {}", content.length());
+            log.info("faq 시스템 프롬프트를 로드합니다. 경로: {}, 길이: {}", systemTemplate.getURI(), content.length());
             return content;
         } catch (Exception e) {
             log.warn("faq 시스템 프롬프트 로드중 문제가 발생했습니다.", e);

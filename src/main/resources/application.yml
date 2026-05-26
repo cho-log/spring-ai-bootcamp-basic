@@ -11,3 +11,7 @@ spring:
       embedding:
         options:
           model: text-embedding-3-small
+
+app:
+  chat:
+    system-prompt: classpath:prompts/faq-system.st
