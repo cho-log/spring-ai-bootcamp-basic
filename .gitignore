@@ -40,3 +40,9 @@ __pycache__/
 
 # Matrix metadata
 **/.omc/
+
+src/main/resources/application-*.yml
+
+src/main/resources/layer1_faq/
+src/main/resources/layer2_policies/
+src/main/resources/layer3_examples/

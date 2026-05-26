@@ -45,10 +45,13 @@ cd data
 
 # Python 환경 준비
 python -m venv .venv
-.venv/bin/pip install openai qdrant-client python-dotenv
+.venv/bin/pip install -r requirements.txt
 
-# 평가 실행 (judge 모델 gpt-4o-mini 사용, 100문항 기준 약 $0.5~1 추가 비용)
+# 평가 실행 (judge 모델 gpt-4o-mini 사용, 150문항 기준 약 $1~1.5 추가 비용)
 .venv/bin/python evaluate.py
+
+# 빠르게 돌리려면 병렬 워커 활성화 (default: 1)
+.venv/bin/python evaluate.py --parallel 10
 ```
 
 ---

@@ -2,12 +2,30 @@ spring:
   application:
     name: spring-ai-bootcamp-basic
   ai:
+    retry:
+      max-attempts: 3 # 최대 시도(최초 호출 포함)
+      backoff:
+        initial-interval: 500ms # 첫 대기 시간
+        multiplier: 2 # 요청당 시간을 몇배로 늘릴지
+        max-interval: 3s
+      exclude-on-http-codes: # 재시도 제외 목록
+        - 408
+        - 429
+        - 500
+        - 502
+        - 503
+        - 504
+      on-client-errors: false # 4xx 에러 전체를 재시도로 볼지
     openai:
       api-key: ${OPENAI_API_KEY}
       chat:
         options:
           model: gpt-4.1-nano
-          temperature: 0.1
+          temperature: 0.2
       embedding:
         options:
           model: text-embedding-3-small
+
+app:
+  chat:
+    system-prompt: classpath:prompts/faq-system.st
