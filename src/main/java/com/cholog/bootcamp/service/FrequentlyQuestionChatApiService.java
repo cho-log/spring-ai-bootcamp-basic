@@ -6,6 +6,7 @@ import com.cholog.bootcamp.dto.FrequentlyQuestionChatResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -13,6 +14,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,12 +35,32 @@ public class FrequentlyQuestionChatApiService {
                 .topK(8)
                 .build());
         log.info("hits 결과: {}", hits.stream().map(Document::getId).toList());
+        try {
+            var response = execute(question, hits);
 
-        var context = hits.stream()
+            var generation = response.getResult().getOutput();
+            var metadata = response.getMetadata();
+
+            var usage = TokenUsage.from(metadata.getUsage());
+            var price = calculateModelPrice(metadata.getModel(), usage);
+
+            log.info("[{}] 토큰 사용량: {}, 토큰 비용: {}$\n결과: {}", metadata.getModel(), usage, price, generation.getText());
+            return new FrequentlyQuestionChatResponseDto(generation.getText(), usage);
+        } catch (Exception e) {
+            log.warn("챗봇 응답 실패: {}", e.getMessage(), e);
+            return new FrequentlyQuestionChatResponseDto(
+                    "챗봇 응답 생성 중 오류 발생했습니다.",
+                    TokenUsage.EMPTY
+            );
+        }
+    }
+
+    private ChatResponse execute(String question, List<Document> documents) {
+        var context = documents.stream()
                 .map(d -> "## " + d.getMetadata().get("source") + "\n" + d.getText())
                 .collect(Collectors.joining("\n\n---\n\n"));
 
-        var response = chatClient.prompt(context)
+        return chatClient.prompt(question)
                 .user(u -> u.text("""
                                 참고 문서:
                                 {context}
@@ -49,21 +71,6 @@ public class FrequentlyQuestionChatApiService {
                         .param("question", question))
                 .call()
                 .chatResponse();
-
-        if (response == null) {
-            return new FrequentlyQuestionChatResponseDto(
-                    "응답이 없습니다.", TokenUsage.EMPTY
-            );
-        }
-
-        var generation = response.getResult().getOutput();
-        var metadata = response.getMetadata();
-
-        var usage = TokenUsage.from(metadata.getUsage());
-        var price = calculateModelPrice(metadata.getModel(), usage);
-
-        log.info("[{}] 토큰 사용량: {}, 토큰 비용: {}$\n결과: {}", metadata.getModel(), usage, price, generation.getText());
-        return new FrequentlyQuestionChatResponseDto(generation.getText(), usage);
     }
 
     private BigDecimal calculateModelPrice(String model, TokenUsage usage) {
