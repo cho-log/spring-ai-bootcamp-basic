@@ -6,11 +6,10 @@
 
 ## 실행 옵션
 
-
-애플리케이션 실행 시 VectorStore 임베딩을 수행하려면 인자로 --mode=embedding 옵션을 주어야합니다.
-
+애플리케이션 실행 시 VectorStore 임베딩을 수행하려면 인자로 --mode=embedding 옵션을 주어야합니다.  
 임베딩 수행하지 않을 경우 옵션을 제외합니다.
 
+## 실행 명령어
 ```bash
 # bootrun 실행 시
 ./gradlew bootrun
