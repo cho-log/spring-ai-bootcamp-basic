@@ -30,12 +30,10 @@ public class ChatbotService {
 
     public ChatbotService(
         VectorStore vectorStore,
-        MarkdownReader markdownReader,
         ChatClient.Builder chatClientBuilder
     ) {
         this.chatClient = chatClientBuilder.build();
         this.vectorStore = vectorStore;
-        vectorStore.add(markdownReader.loadAll());
         this.resolver = new PathMatchingResourcePatternResolver();
     }
 
