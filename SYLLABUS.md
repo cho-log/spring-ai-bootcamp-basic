@@ -59,7 +59,7 @@ Easy는 그럭저럭. Medium부터 급락합니다.
 - 챗봇 구현·실행: **$1~5** 안쪽 (GPT-4.1-nano 기준)
 - 평가 스크립트까지 돌리면: **+$0.5~1** (judge 모델 `gpt-4o-mini`)
 
-API 키 발급과 환경 설정은 [README.md](README.md#필요한-것)를 참고하세요.
+API 키 발급과 환경 설정은 [BASE-README.md](BASE-README.md#필요한-것)를 참고하세요.
 
 ---
 
