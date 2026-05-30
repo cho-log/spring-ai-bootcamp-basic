@@ -77,6 +77,7 @@ public class ChatbotService {
             """)
             .user("""
                 [사용자 질문]
+                %s
                 
                 [컨텍스트]
                 %s
