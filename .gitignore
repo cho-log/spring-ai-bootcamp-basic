@@ -42,3 +42,4 @@ __pycache__/
 **/.omc/
 
 data/vector-store.json
+data/rag_eval
