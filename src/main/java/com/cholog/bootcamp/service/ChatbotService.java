@@ -43,7 +43,7 @@ public class ChatbotService {
         List<Document> documents = vectorStore.similaritySearch(searchRequest);
 
         // 증강 & 생성
-        documents = getFullDocuments(documents);
+        // documents = getFullDocuments(documents);
         String context = getContext(documents);
         ChatResponse chatResponse = chatClient.prompt()
             .system("""
@@ -87,7 +87,7 @@ public class ChatbotService {
 
         String answer = chatResponse.getResult().getOutput().getText();
         Usage usage = chatResponse.getMetadata().getUsage();
-        return ChatbotResponse.from(answer, usage);
+        return ChatbotResponse.from(answer, usage, getContextList(documents));
     }
 
     private List<Document> getFullDocuments(List<Document> documents) {
@@ -106,10 +106,16 @@ public class ChatbotService {
             .toList();
     }
 
-    private static String getContext(List<Document> documents) {
+    private String getContext(List<Document> documents) {
         return documents.stream()
             .map(Document::getText)
             .collect(Collectors.joining("\n\n"));
+    }
+
+    private List<String> getContextList(List<Document> documents) {
+        return documents.stream()
+            .map(Document::getText)
+            .toList();
     }
 
     private SearchRequest getSearchRequest(String query, int k) {
