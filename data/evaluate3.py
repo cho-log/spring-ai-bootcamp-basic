@@ -96,10 +96,10 @@ def evaluatee():
     return evaluate(
         dataset,
         metrics=[
-                Faithfulness(),
-                AnswerRelevancy(),
-#                 ContextPrecision(),
-                ContextRelevance(),
+                Faithfulness(),  # 컨텍스트 기반 답변 생성
+                AnswerRelevancy(),  # 생성된 답변이 질문과 얼마나 관련
+#                 ContextPrecision(),  # reference 필요로 해서 우선 주석
+                ContextRelevance(),  # 컨텍스트 질문과 얼마나 관련
         ],
         llm=ragas_llm,
     )

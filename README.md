@@ -19,3 +19,17 @@
 java -jar <jar 파일>
 java -jar <jar 파일> --mode=embedding
 ```
+
+# 챗봇 평가
+
+## 실행 명령어
+
+```bash
+export LANGCHAIN_TRACING_V2=true
+export LANGCHAIN_API_KEY=<your-api-key>
+export LANGCHAIN_PROJECT=my-ragas-eval
+export OPENAI_API_KEY=<your-api-key>
+
+cd data
+.venv/bin/python evaluate3.py  # ragas 메트릭 평가
+```
