@@ -7,10 +7,10 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.rag.Query;
+import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
 import com.cholog.bootcamp.dto.ChatbotRequest;
@@ -24,25 +24,33 @@ public class ChatbotService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
-    private final ResourcePatternResolver resolver;
+    private final QueryTransformer queryTransformer;
 
     public ChatbotService(
         VectorStore vectorStore,
-        ChatClient.Builder chatClientBuilder
+        ChatClient.Builder chatClientBuilder,
+        QueryTransformer queryTransformer
     ) {
         this.chatClient = chatClientBuilder.build();
         this.vectorStore = vectorStore;
-        this.resolver = new PathMatchingResourcePatternResolver();
+        this.queryTransformer = queryTransformer;
     }
 
     public ChatbotResponse chat(ChatbotRequest request) {
+        // 질문 전처리
+        Query originalQuery = new Query(request.question());
+        Query transformedQuery = queryTransformer.transform(originalQuery);
+        log.info("Original query: {}", request.question());
+        log.info("Transformed query: {}", transformedQuery.text());
+
         // 검색
-        SearchRequest searchRequest = getSearchRequest(request.question(), 4);
+        SearchRequest searchRequest = getSearchRequest(transformedQuery, 4);
+
         List<Document> documents = vectorStore.similaritySearch(searchRequest);
 
-        // 증강 & 생성
-        // documents = getFullDocuments(documents);
+        // 생성
         String context = getContext(documents);
+
         ChatResponse chatResponse = chatClient.prompt()
             .system("""
                 당신은 제공된 [컨텍스트]만을 기반으로 [사용자 질문]에 답변하는 신뢰할 수 있는 초록 고객센터의 챗봇입니다.
@@ -82,9 +90,9 @@ public class ChatbotService {
             .toList();
     }
 
-    private SearchRequest getSearchRequest(String query, int k) {
+    private SearchRequest getSearchRequest(Query query, int k) {
         return SearchRequest.builder()
-            .query(query)
+            .query(query.text())
             .topK(k)
             .build();
     }
