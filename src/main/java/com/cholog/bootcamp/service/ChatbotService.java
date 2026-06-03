@@ -1,6 +1,5 @@
 package com.cholog.bootcamp.service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,7 +7,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.reader.TextReader;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -70,22 +68,6 @@ public class ChatbotService {
         String answer = chatResponse.getResult().getOutput().getText();
         Usage usage = chatResponse.getMetadata().getUsage();
         return ChatbotResponse.from(answer, usage, getContextList(documents));
-    }
-
-    private List<Document> getFullDocuments(List<Document> documents) {
-        return documents.stream()
-            .map(document -> document.getMetadata().get("filename").toString())
-            .distinct()
-            .map(filename -> {
-                try {
-                    return resolver.getResources("classpath:data/**/" + filename)[0];
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .map(TextReader::new)
-            .flatMap(reader -> reader.get().stream())
-            .toList();
     }
 
     private String getContext(List<Document> documents) {
