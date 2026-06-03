@@ -4,6 +4,7 @@
     "question_ko": "주문 취소는 어떻게 하나요?",
     "question_en": "How do I cancel my order?",
     "expected_answer": "Go to My Orders and tap Cancel Order while the status is Preparing. Cancellation is instant with a full refund. Once the order is Shipped, cancellation is not possible and you must initiate a return after delivery.",
+    "reference_answer": "주문 취소는 나의 주문에서 주문 상태가 배송 준비중일 때 주문 취소를 누르면 즉시 처리됩니다. 취소되면 원래 결제수단으로 전액 환불됩니다. 상태가 배송중으로 바뀐 뒤에는 취소할 수 없고 배송 완료 후 반품 절차를 진행해야 합니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -16,6 +17,7 @@
     "question_ko": "무료 배송 기준이 얼마인가요?",
     "question_en": "What is the free shipping threshold?",
     "expected_answer": "Standard members get free Economy shipping on orders 20,000 won or more. Plus members get free Economy shipping on all orders. VIP members get free Priority shipping on all orders. Active subscribers also get free shipping on all orders regardless of amount.",
+    "reference_answer": "무료 배송 기준은 회원 상태에 따라 다릅니다. 스탠다드 회원은 20,000원 이상 주문 시 일반 배송이 무료이고, 플러스 회원은 모든 주문에서 일반 배송이 무료입니다. VIP 회원은 모든 주문에서 우선 배송이 무료이며, 활성 구독자는 비구독 주문까지 포함해 주문 금액과 관계없이 모든 주문의 배송비가 무료입니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -28,6 +30,7 @@
     "question_ko": "반품은 배송 완료 후 며칠 안에 신청해야 하나요?",
     "question_en": "How many days after delivery can I return a product?",
     "expected_answer": "Products can be returned within 14 calendar days of delivery, provided the item is unopened or unused with all original accessories and packaging intact.",
+    "reference_answer": "초록에서 직접 구매한 상품은 배송 완료일로부터 14일 이내에 반품을 신청할 수 있습니다. 상품은 미개봉 상태이거나, 개봉했더라도 사용하지 않았고 구성품과 원 포장이 모두 보존되어 있어야 합니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -40,6 +43,7 @@
     "question_ko": "단순 변심 반품 시 수수료가 있나요?",
     "question_en": "Is there a fee for returning an item due to change of mind?",
     "expected_answer": "Yes. Non-defect returns (change of mind, wrong size, etc.) incur a 3,000 won handling fee deducted from the refund. Defect-related returns are free.",
+    "reference_answer": "네, 단순 변심, 사이즈 착오 등 상품 불량이 아닌 사유의 반품은 3,000원의 처리 수수료가 환불금에서 차감됩니다. 상품 불량이나 오배송 등 결함 관련 반품은 수수료 없이 무료로 회수됩니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -52,6 +56,7 @@
     "question_ko": "적립 포인트 1점은 얼마의 가치인가요?",
     "question_en": "What is 1 loyalty point worth?",
     "expected_answer": "1 point equals 1 won. Points can be used on any future order with a minimum redemption of 1,000 points.",
+    "reference_answer": "적립 포인트 1점은 1원과 같습니다. 포인트는 향후 주문에 사용할 수 있으며, 한 번에 최소 1,000점 이상부터 사용할 수 있습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -64,6 +69,7 @@
     "question_ko": "포인트 유효기간이 어떻게 되나요?",
     "question_en": "When do loyalty points expire?",
     "expected_answer": "Points expire 12 months from the date they are earned. Expired points cannot be restored or extended.",
+    "reference_answer": "포인트는 적립일로부터 12개월 후 만료됩니다. 만료된 포인트는 연장하거나 복구할 수 없습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -76,6 +82,7 @@
     "question_ko": "냉장 배송 요일이 따로 있나요?",
     "question_en": "Are there restricted days for cold-chain delivery?",
     "expected_answer": "Yes. Cold-chain (fresh and frozen) delivery is available Monday through Thursday only, to prevent packages from sitting in transit over a weekend. A flat cold-chain fee of 4,000 won applies regardless of order amount or membership tier.",
+    "reference_answer": "네, 냉장/냉동 콜드체인 배송은 주말 운송 중 체류를 막기 위해 월요일부터 목요일까지만 가능합니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -88,6 +95,7 @@
     "question_ko": "제주도 배송 시 추가 요금이 있나요?",
     "question_en": "Is there an extra charge for delivery to Jeju Island?",
     "expected_answer": "No surcharge. Delivery to Jeju and offshore islands takes an additional 1-2 business days beyond the standard timeframe.",
+    "reference_answer": "아니요, 제주도와 주요 도서 지역 배송에는 추가 요금이 없습니다. 다만 표준 배송 기간보다 1-2영업일이 더 걸릴 수 있고, 도서 지역에는 당일 배송이 제공되지 않습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -100,6 +108,7 @@
     "question_ko": "VIP 등급이 되려면 얼마를 써야 하나요?",
     "question_en": "How much do I need to spend to reach VIP tier?",
     "expected_answer": "Spend over 800,000 won in a calendar year. VIP benefits include free Priority shipping on all orders, 5% point reward, early access to new product launches, and a dedicated support line at 1588-0002.",
+    "reference_answer": "VIP 등급은 한 해 동안 800,000원 이상 구매하면 달성합니다. VIP 혜택에는 모든 주문 우선 배송 무료, 5% 포인트 적립, 신제품 선공개 접근, VIP 전용 상담 번호 1588-0002가 포함됩니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -112,6 +121,7 @@
     "question_ko": "당일 발송 마감 시간이 언제인가요?",
     "question_en": "What is the cutoff time for same-day dispatch?",
     "expected_answer": "Orders confirmed before 1 PM KST on business days are dispatched the same afternoon. Orders after 1 PM or on weekends and public holidays are queued for the next business day.",
+    "reference_answer": "평일 기준 오후 1시(한국시간) 전에 결제가 확정된 주문은 같은 날 오후 택배사로 인계됩니다. 오후 1시 이후 주문이나 주말, 공휴일 주문은 다음 영업일 발송 대기열로 넘어갑니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -124,6 +134,7 @@
     "question_ko": "카카오페이 환불은 얼마나 걸리나요?",
     "question_en": "How long does a Kakao Pay refund take?",
     "expected_answer": "Kakao Pay and Naver Pay refunds are typically instant after the returned item is inspected (usually 1-2 business days after pickup).",
+    "reference_answer": "카카오페이와 네이버페이 환불은 보통 반품 상품을 수령해 검수한 뒤 즉시 처리됩니다. 반품 검수에는 일반적으로 1-2영업일이 걸립니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -136,6 +147,7 @@
     "question_ko": "세금계산서는 어떻게 받을 수 있나요?",
     "question_en": "How do I request a tax invoice?",
     "expected_answer": "Go to My Orders, select the order, and tap Request Tax Invoice. Enter your business registration number. Tax invoices are issued within 1 business day. Requests must be made within the same calendar month as the purchase.",
+    "reference_answer": "세금계산서는 나의 주문에서 해당 주문을 선택한 뒤 세금계산서 요청을 눌러 신청합니다. 사업자등록번호를 입력하면 영업일 기준 1일 이내 등록 이메일로 발행되며, 신청은 구매한 달과 같은 달 안에서만 가능합니다. 이전 달 주문 건은 소급 발행할 수 없습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -148,6 +160,7 @@
     "question_ko": "구독을 해지하지 않고 잠깐 멈출 수 있나요?",
     "question_en": "Can I pause my subscription without canceling?",
     "expected_answer": "Yes. In Settings > Subscriptions, tap Pause to skip the next delivery or halt all deliveries for up to 3 months. No charge during the pause period. Resume anytime with no penalty.",
+    "reference_answer": "네, 구독은 해지하지 않고 일시정지할 수 있습니다. 설정 > 구독에서 일시정지를 선택하면 다음 배송을 건너뛰거나 최대 3개월까지 전체 배송을 멈출 수 있습니다. 일시정지 기간에는 요금이 청구되지 않습니다. 언제든 재개할 수 있으며 별도 불이익은 없습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -160,6 +173,7 @@
     "question_ko": "친환경 포장을 선택하면 포인트가 추가로 쌓이나요?",
     "question_en": "Do I earn bonus points for choosing Green Packaging?",
     "expected_answer": "Yes. Each order using Green Packaging earns 200 bonus eco points credited 7 days after delivery confirmation. Green Packaging is free of charge.",
+    "reference_answer": "네, 친환경 포장을 선택하면 주문당 200 친환경 보너스 포인트가 적립됩니다. 이 포인트는 배송 완료 확인 후 7일 뒤 지급됩니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -172,6 +186,7 @@
     "question_ko": "마켓플레이스 판매자에게 직접 연락하는 방법이 있나요?",
     "question_en": "How can I contact a Marketplace seller directly?",
     "expected_answer": "You can contact the seller through the in-app messaging feature in My Orders > Contact Seller. If the seller does not respond within 3 business days, you can escalate to Cholog Buyer Protection by selecting Open Dispute in My Orders.",
+    "reference_answer": "마켓플레이스 판매자에게는 나의 주문 > 판매자 문의의 인앱 메시지 기능으로 연락하실 수 있습니다. 판매자가 3영업일 안에 응답하지 않거나 해결되지 않으면 나의 주문에서 분쟁 접수를 선택해 초록 구매자 보호로 분쟁을 접수할 수 있습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -184,6 +199,7 @@
     "question_ko": "반품 신청 후 환불받기까지 가장 빠른 경우 얼마나 걸려요?",
     "question_en": "What is the fastest possible refund timeline after initiating a return?",
     "expected_answer": "The fastest scenario: courier picks up the item, inspection completes in 1 business day, and Kakao Pay or Naver Pay refund is processed instantly. Minimum total time is approximately 2-3 business days from return request to refund. Credit card refunds take an additional 3-5 business days after inspection.",
+    "reference_answer": "가장 빠른 환불은 반품 상품 회수 후 검수가 1영업일 안에 끝나고 카카오페이 또는 네이버페이처럼 검수 후 즉시 환불되는 결제수단을 사용한 경우입니다. 이때 반품 요청부터 환불까지 최소 약 2-3영업일이 걸릴 수 있습니다. 신용카드는 검수 완료 후 추가로 3-5영업일이 걸립니다.",
     "tier": "medium",
     "source_layers": [
       "faq"
@@ -196,6 +212,7 @@
     "question_ko": "회원가입은 어떻게 하나요?",
     "question_en": "How do I create an account?",
     "expected_answer": "You can sign up via Kakao, Naver, or Google SSO (social login) or directly with an email address. Membership is open to anyone aged 14 or older. After signing up, you receive a 3,000 won welcome coupon valid for 30 days.",
+    "reference_answer": "회원가입은 카카오, 네이버, 구글 간편 로그인으로 하거나 이메일 주소로 직접 가입할 수 있습니다. 유효한 이메일 주소나 한국 휴대폰 번호가 필요하며, 만 14세 이상이면 가입할 수 있습니다. 신규 회원은 30일간 유효한 3,000원 웰컴 쿠폰을 받습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -208,6 +225,7 @@
     "question_ko": "뉴스레터 수신을 해지하려면 어떻게 하나요?",
     "question_en": "How do I unsubscribe from the newsletter?",
     "expected_answer": "Click the Unsubscribe link at the bottom of any newsletter email. Alternatively, go to My Page > Notification Settings and turn off Newsletter. Changes take effect within 24-48 hours.",
+    "reference_answer": "뉴스레터 수신 해지는 뉴스레터 이메일 하단의 수신거부 링크를 클릭하면 됩니다. 앱이나 웹의 마이페이지 > 알림 설정에서 뉴스레터 수신을 끌 수도 있으며, 변경 사항은 보통 24-48시간 내 반영됩니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -220,6 +238,7 @@
     "question_ko": "고객센터 전화번호와 운영 시간이 어떻게 되나요?",
     "question_en": "What is the customer service phone number and hours?",
     "expected_answer": "Customer service is available at 1588-1234 on weekdays from 9 AM to 6 PM KST. Phone and live chat are not available on weekends or public holidays. The automated chatbot is available 24/7.",
+    "reference_answer": "고객센터 일반 전화는 1588-0000, VIP 우선 상담 전화는 1588-0002입니다. 전화 상담은 월요일부터 금요일까지 오전 9시-오후 6시(한국시간)에 운영됩니다. 실시간 채팅은 웹과 앱에서 매일 오전 8시-오후 10시까지 이용할 수 있고, 카카오톡 AI 상담은 24시간 이용할 수 있습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -232,6 +251,7 @@
     "question_ko": "리뷰를 작성하면 포인트가 얼마나 쌓이나요?",
     "question_en": "How many points do I earn for writing a review?",
     "expected_answer": "Text-only review earns 100 points. A review with at least one photo earns 600 points total (100 text + 500 photo bonus). Points are credited 1-2 business days after the review is approved by the moderation team.",
+    "reference_answer": "텍스트 리뷰 작성 시 100점, 사진이 포함된 리뷰는 사진 보너스 500점을 더해 총 600점이 쌓입니다. 포인트는 리뷰가 운영팀 승인 또는 검토를 통과한 뒤 1-2영업일 내 지급됩니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -244,6 +264,7 @@
     "question_ko": "비밀번호 재설정 링크가 만료됐어요. 유효시간이 얼마인가요?",
     "question_en": "My password reset link expired. How long is it valid?",
     "expected_answer": "Password reset links are valid for 30 minutes after being sent. If the link has expired, go to the login screen and request a new one via Forgot Password.",
+    "reference_answer": "비밀번호 재설정 링크는 발송 후 30분 동안 유효합니다. 링크가 만료되면 로그인 화면의 비밀번호 찾기에서 등록 이메일로 재설정 링크를 다시 요청해야 합니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -256,6 +277,7 @@
     "question_ko": "CU 편의점 수령 시 보관 기간이 얼마나 되나요?",
     "question_en": "How long will my order be held at a CU convenience store?",
     "expected_answer": "Orders are held at the designated CU store for 5 days at no charge. If not picked up within 5 days, the order is returned and a refund is processed.",
+    "reference_answer": "CU 편의점 수령 주문은 지정한 CU 매장에서 5일 동안 보관됩니다. 5일 안에 수령하지 않으면 상품은 자동 반품되고 환불이 처리됩니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -268,6 +290,7 @@
     "question_ko": "예약 배송은 최대 며칠 후까지 지정할 수 있나요?",
     "question_en": "How far in advance can I schedule a reserved delivery?",
     "expected_answer": "You can schedule a reserved delivery up to 14 days in the future. Economy and Priority shipping both support reserved delivery. Same-day delivery cannot be reserved in advance.",
+    "reference_answer": "예약 배송은 최대 14일 뒤 날짜까지 지정할 수 있습니다. 일반 배송과 우선 배송에서 지원되며, 당일 배송은 미리 예약할 수 없습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -280,6 +303,7 @@
     "question_ko": "어떤 결제 수단을 지원하나요?",
     "question_en": "What payment methods are supported?",
     "expected_answer": "Supported payment methods include credit/debit cards, Kakao Pay, Naver Pay, real-time bank transfer, loyalty points, and discount coupons. Points and coupons can be combined with other payment methods. Virtual account (가상계좌) is not supported.",
+    "reference_answer": "지원 결제수단은 신용카드와 체크카드, 카카오페이, 네이버페이, 토스페이, 애플페이, 토스페이먼츠 실시간 계좌이체, 초록페이, 포인트, 쿠폰, 기프트카드 또는 스토어 크레딧입니다. 포인트와 쿠폰은 다른 결제수단과 함께 사용할 수 있습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -292,6 +316,7 @@
     "question_ko": "주문번호는 어디서 확인하나요?",
     "question_en": "Where can I find my order number?",
     "expected_answer": "Your order number is in the Kakao AlimTalk notification sent after placing the order, and also in the app under My Orders. Order numbers follow the format YYYYMMDD-XXXX.",
+    "reference_answer": "주문번호는 주문 완료 후 발송되는 카카오 알림톡에서 확인할 수 있고, 앱의 나의 주문에서도 확인할 수 있습니다. 주문번호는 연월일-일련번호 형식입니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -304,6 +329,7 @@
     "question_ko": "선물 포장을 추가하면 비용이 얼마인가요?",
     "question_en": "How much does gift wrapping cost?",
     "expected_answer": "Gift wrapping costs 1,500 won per item. A gift message card can be included at no extra charge. If the order is canceled before packaging begins, the wrapping fee is fully refunded.",
+    "reference_answer": "선물 포장 비용은 상품 1개당 1,500원입니다. 브랜드 박스, 리본, 최대 100자 메시지 카드가 포함되고 메시지 카드는 추가 비용이 없습니다. 포장 시작 전 주문을 취소하면 포장비도 전액 환불됩니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -316,6 +342,7 @@
     "question_ko": "배송 메모를 남길 수 있나요?",
     "question_en": "Can I leave a delivery note for the courier?",
     "expected_answer": "Yes. You can enter a delivery note at checkout or edit it in My Orders before the order is dispatched. Notes such as 'Leave at door' or 'Leave with security guard' are passed to the courier.",
+    "reference_answer": "네, 배송 메모는 주문 시 결제 화면에서 입력할 수 있고, 발송 전이라면 나의 주문에서 해당 주문을 열어 수정할 수 있습니다. '문 앞에 놓아주세요', '경비실에 맡겨주세요', '무인 택배함에 넣어주세요' 같은 요청사항이 택배기사에게 전달됩니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -328,6 +355,7 @@
     "question_ko": "리뷰는 배송 후 며칠 안에 써야 하나요?",
     "question_en": "Within how many days of delivery can I write a review?",
     "expected_answer": "Reviews can be submitted within 90 days of delivery confirmation. After 90 days, the review button is no longer available for that order.",
+    "reference_answer": "리뷰는 배송 완료 후 90일 이내에 작성할 수 있습니다. 90일이 지나면 해당 주문의 리뷰 작성 버튼이 더 이상 제공되지 않습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -340,6 +368,7 @@
     "question_ko": "포인트는 최소 몇 점부터 쓸 수 있나요?",
     "question_en": "What is the minimum number of points I can redeem at once?",
     "expected_answer": "The minimum redemption is 1,000 points (= 1,000 won). You can use any amount above that in 1-point increments. Points can be combined with other payment methods.",
+    "reference_answer": "포인트는 최소 1,000점부터 사용할 수 있습니다. 1,000점 이상은 1점 단위로 사용할 수 있고, 포인트는 다른 결제수단 및 쿠폰과 함께 사용할 수 있습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -352,6 +381,7 @@
     "question_ko": "실시간 GPS 배송 추적은 어떤 배송에서 가능한가요?",
     "question_en": "Which delivery type supports real-time GPS tracking?",
     "expected_answer": "Real-time GPS tracking is available only with Priority shipping. Economy shipping provides step-by-step status updates but no live GPS. VIP members, who receive free Priority shipping, always have access to GPS tracking.",
+    "reference_answer": "실시간 GPS 배송 추적은 우선 배송에서만 제공됩니다. 일반 배송은 단계별 상태 업데이트만 제공하고 실시간 GPS는 지원하지 않습니다. VIP 회원은 모든 주문에서 우선 배송 무료 혜택을 받으므로 우선 배송 주문에 대해 GPS 추적을 이용할 수 있습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
@@ -364,6 +394,7 @@
     "question_ko": "회원 탈퇴하면 포인트는 어떻게 되나요?",
     "question_en": "What happens to my loyalty points when I delete my account?",
     "expected_answer": "All points and coupons are immediately forfeited upon account deletion and cannot be restored. It is recommended to use remaining points before deleting your account.",
+    "reference_answer": "회원 탈퇴를 하면 남아 있는 포인트와 쿠폰은 즉시 소멸되며 복구할 수 없습니다. 탈퇴 전에 남은 포인트를 사용하는 것이 좋습니다.",
     "tier": "easy",
     "source_layers": [
       "faq"
