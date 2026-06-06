@@ -30,7 +30,11 @@ Kakao, Naver, or Google SSO. All new accounts start at Standard tier and receive
 Go to "Settings > Privacy > Delete My Account". After confirming with your password or
 a one-time verification code, deletion is scheduled within 7 business days. All personal
 data, order history, saved addresses, and payment tokens are purged under Korea's Personal
-Information Protection Act (PIPA). Unused points and coupons are forfeited upon deletion.
+Information Protection Act (PIPA).
+
+### What happens to unused points and coupons after account deletion?
+
+Unused points and coupons are forfeited upon deletion.
 
 ### How do I enable two-factor authentication (2FA)?
 
