@@ -27,7 +27,7 @@ public class ChatbotService {
     }
 
     public ChatbotResponse chat(ChatbotRequest request) {
-        List<Document> documents = ragRetriever.retrieve(request.question(), 10);
+        List<Document> documents = ragRetriever.retrieve(request.question(), 4);
         ChatResponse chatResponse = ragGenerator.generate(documents, request.question());
         return ChatbotResponse.from(chatResponse, documents);
     }

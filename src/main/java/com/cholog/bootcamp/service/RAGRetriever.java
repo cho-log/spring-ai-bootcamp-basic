@@ -37,15 +37,7 @@ public class RAGRetriever {
     }
 
     private Query getQuery(String question) {
-        Query originalQuery = new Query(question);
-        Query transformedQuery = queryTransformer.transform(originalQuery);
-        List<Query> expand = queryExpander.expand(originalQuery);
-        for (Query query : expand) {
-            log.info("Expanding query {}", query.text());
-        }
-        log.info("Original Query: {}", originalQuery.text());
-        log.info("Transformed Query: {}", transformedQuery.text());
-        return transformedQuery;
+        return new Query(question);
     }
 
     private SearchRequest getSearchRequest(Query query, int topK) {
