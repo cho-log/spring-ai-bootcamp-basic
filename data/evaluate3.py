@@ -11,6 +11,7 @@ from ragas.metrics import (
     AnswerRelevancy,
     ContextPrecision,
     ContextRelevance,
+    ContextRecall,
 )
 
 from langchain_openai import ChatOpenAI
@@ -64,23 +65,25 @@ def ask_server(question: str) -> dict | None:
 
 def evaluatee():
     source_file = DATA_DIR / "wall_type_null_test_results.json"
-    result_file = DATA_DIR / "wall_type_null_test_results.json"
 
     with open(source_file, "r", encoding="utf-8") as f:
         items = json.load(f)
 
     questions = []
+    reference_answers = []
     answers = []
     contexts = []
     ground_truths = []
 
     for item in items:
         questions.append(item["question"])
+        reference_answers.append(item["reference_answer"])
         answers.append(item["answer"])
         contexts.append(item["contexts"])
 
     data = {
         "question": questions,
+        "reference": reference_answers,
         "answer": answers,
         "contexts": contexts,
     }
@@ -98,7 +101,8 @@ def evaluatee():
         metrics=[
                 Faithfulness(),  # 컨텍스트 기반 답변 생성
                 AnswerRelevancy(),  # 생성된 답변이 질문과 얼마나 관련
-#                 ContextPrecision(),  # reference 필요로 해서 우선 주석
+                ContextPrecision(),
+                ContextRecall(),
                 ContextRelevance(),  # 컨텍스트 질문과 얼마나 관련
         ],
         llm=ragas_llm,
@@ -141,6 +145,7 @@ def main():
     for i, q in enumerate(questions):
         qid = q.get("id", f"Q{i+1}")  # 질문 id
         question_ko = q["question_ko"]  # 질문
+        reference_answer = q["reference_answer"]  # 질문
 
         # 서버에 질문
         response = ask_server(question_ko)
@@ -158,6 +163,7 @@ def main():
         item = {
             "id": qid,
             "question": question_ko,
+            "reference_answer": reference_answer,
             "answer": answer,
             "contexts": contexts
         }
